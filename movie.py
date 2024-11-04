@@ -81,7 +81,22 @@ class MovieDatabase:
             ratings = [details["rating"] for details in self.movies.values()]
             average = round(sum(ratings) / len(ratings), 2)
 
-        # Get best and worst movie with their ratings
-        best_movie = 
+            # Get best and worst movie with their ratings
+            best_movie = max(self.movies, key=lambda x: self.movies[x]["rating"])
+            best_rating = self.movies[best_movie]["rating"]
 
+            worst_movie =  min(self.movies, key=lambda x: self.movies[x]["rating"])
+            worst_rating = self.movies[worst_movie]["rating"]
+
+            # Print the results
+            print(f"Average rating: {average}")
+            print(f"Best movie: {best_movie} (Rating: {best_rating})")
+            print(f"Worst movie: {worst_movie} (Rating: {worst_rating})")
+        else:
+            print("No movie in database")
+
+    
+    def random_movie(self):
+        """Display a random movie and its rating"""
+        
             
