@@ -77,4 +77,85 @@ def update_movie(self):
 
 def stats(self):
     """Display statistics about the movies in the database."""
-    
+    if self.movies: 
+        ratings = [details['rating'] for details in self.movies.values()]
+        average = round(statistics.mean(ratings), 2)
+        median = statistics.median(ratings)
+        best_movie = max(self.movies, key=lambda k: self.movies[k]["rating"])
+        worst_movie = min(self.movies, key=lambda k: self.movies[k]["rating"])
+
+        print(f"Average rating: {average}")
+        print(f"Median rating: {median}")
+        print(f"Best movie: {best_movie.title()} with rating {self.movies[best_movie]['rating']}")
+        print(f"Worst movie: {worst_movie.title()} with rating {self.movies[worst_movie]['rating']}")
+    else:
+        print("No movies in database")
+
+
+def random_movie(self):
+    """Display a random movie and its rating."""
+    movie = random.choice(list(self.movies.keys()))
+    print(f"Random movie: {movie.title()}, Rating: {self.movies[movie]['rating']}")
+
+
+def search_movie(self):
+    """Search movie by a part of their name (case-insensitive)."""
+    search_term = input("Enter part of the movie name to search: ").lower()
+    found_movies = {name: details for name, details in self.movies.items() if search_term in name}
+    if found_movies:
+        for name, details in found_movies.items():
+            print(f"{name.title()} - Rating: {details['rating']}, Year: {details['year']}")
+    else:
+        print("No matches found")
+
+
+def movies_sorted_by_rating(self):
+    """Display all movies sorted by rating in descending order."""
+    sorted_movies = sorted(self.movies.items(), key=lambda x: x[1]['rating'], reverse=True)
+    for name, details in sorted_movies:
+        print(f"{name.title()} - Rating: {details['rating']}, Year: {details['year']}")
+
+
+def main():
+    """Main function to run the movie application."""
+    db = MovieDatabase() # Instance of MovieDatabase class
+
+    while True:
+        print("\n********** My Movies Database **********")
+        print("\nMenu:")
+        print("0. Exit")
+        print("1. List movies")
+        print("2. Add Movie")
+        print("3. Delete Movie")
+        print("4. Update Movie")
+        print("5. Stats")
+        print("6. Random Movie")
+        print("7. Search Movie")
+        print("8. Movies sorted by rating")
+
+        choice = input("Enter a choice (0 - 8): ")
+        if choice == "0":
+            print("\nBye")
+            break
+        elif choice == "1":
+            db.list_movies()
+        elif choice == "2":
+            db.add_movie()
+        elif choice == "3":
+            db.delete_movie()
+        elif choice == "4":
+            db.update_movie()
+        elif choice == "5":
+            db.stats()
+        elif choice == "6":
+            db.random_movie()
+        elif choice == "7":
+            db.search_movie()
+        elif choice == "8":
+            db.movies_sorted_by_rating()
+        else:
+            print("Invalid choice, please try again!")
+
+
+if __name__ == "__main__":
+    main()
