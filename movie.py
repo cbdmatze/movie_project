@@ -45,4 +45,43 @@ class MovieDatabase:
 
     def delete_movie(self):
         """Delete a movie from the database."""
+        name = input("Enter movie name to delete: ").strip()
+        if not name:
+            print("Error: Mov9e name cannot be amopty")
+            return
         
+        if name in self.movies:
+            movie_storage.delete_movie(name) # Delete the movie from the JSON file
+            print(f"'{name}' deleted")
+        else: 
+            print(f"'{name}' not found")
+
+
+    def update_movie(self):
+        """Update rating for an existing movie."""
+        name = input("Enter movie name to update: ").strip()
+        if not name:
+            print("Error: Move name cannot be empty")
+            return
+
+        if name in self.movies:
+            rating = float(input("Enter new rating: "))
+            if 0 <= rating <= 10:
+                movie_storage.update_movie(name, rating) # Update movie in the JSON file
+                print(f"'{name}' updated to rating {rating}")
+            else:
+                print("Error: Rating must be between 0 and 10")
+        else:
+            print(f"Error: '{name}' not found")
+    
+
+    def stats(self):
+        """Display statistics about the movies."""
+        if self.movies:
+            ratings = [details["rating"] for details in self.movies.values()]
+            average = round(sum(ratings) / len(ratings), 2)
+
+        # Get best and worst movie with their ratings
+        best_movie = 
+
+            
