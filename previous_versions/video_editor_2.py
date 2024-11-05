@@ -1,37 +1,33 @@
-import movie_storage  # Handles the file operations
-import random
-
 from rapidfuzz import fuzz
+import random  # Import the random module for selecting random movies
+import statistics  # Import the statistics module for calculating average and median ratings
 
-def preprocess_title(title):
-    """Remove common words like 'The', 'A', etc. for better fuzzy matching."""
-    stop_words = {'the', 'a', 'an'}
-    return ' '.join([word for word in title.split() if word.lower() not in stop_words])
 
 class MovieDatabase:
     """Class to represent a database of movies with their ratings and release years."""
 
-
     def __init__(self):
-        """Initialize the movie database by loading movies from the movie_storage module."""
-        self.movies = movie_storage.get_movies()  # Load movies from the persistent storage
-
-
-    def reload_movies(self):
-        """Reload the movies from the persistent storage after any change."""
-        self.movies = movie_storage.get_movies()
+        """Initialize the movie database with some pre-defined movies."""
+        self.movies = {
+            "The Shawshank Redemption": {"rating": 9.5, "year": 1994},
+            "Pulp Fiction": {"rating": 8.8, "year": 1994},
+            "The Room": {"rating": 3.6, "year": 2003},
+            "The Godfather": {"rating": 9.2, "year": 1972},
+            "The Godfather: Part II": {"rating": 9.0, "year": 1974},
+            "The Dark Knight": {"rating": 9.0, "year": 2008},
+            "12 Angry Men": {"rating": 8.9, "year": 1957},
+            "Everything Everywhere All At Once": {"rating": 8.9, "year": 2022},
+            "Forrest Gump": {"rating": 8.9, "year": 1994},
+            "Star Wars: Episode V": {"rating": 8.7, "year": 1980}
+        }
 
 
     def list_movies(self):
         """List all movies and their ratings and release years."""
-        self.reload_movies()  # Ensure we have the latest movie data
-        if self.movies:
-            print(f"{len(self.movies)} movies in total")
-            print()  # Ensure a blank line between header and content
-            for movie, details in self.movies.items():
-                print(f"{movie}: {details['rating']} ({details['year']})")
-        else:
-            print("No movies found.")
+        print(f"{len(self.movies)} movies in total")
+        print()  # Ensures a blank line between header and content
+        for movie, details in self.movies.items():
+            print(f"{movie}: {details['rating']} ({details['year']})")
 
 
     def add_movie(self):
@@ -41,20 +37,10 @@ class MovieDatabase:
             print("Error: Movie name cannot be empty")
             return
 
-        if name in self.movies:
-            print(f"Error: '{name}' already exists!")
-            return
-
-        try:
-            rating = float(input("Enter movie rating (0-10): "))
-            year = int(input("Enter movie release year: "))
-        except ValueError:
-            print("Error: Invalid input for rating or year.")
-            return
-
+        rating = float(input("Enter movie rating: "))
+        year = int(input("Enter movie release year: "))
         if 0 <= rating <= 10:
-            movie_storage.add_movie(name, year, rating)  # Save the new movie to persistent storage
-            self.reload_movies()  # Reload movies after adding a new one
+            self.movies[name] = {"rating": rating, "year": year}
             print(f"'{name}' added with rating {rating} and year {year}")
         else:
             print("Error: Rating must be between 0 and 10")
@@ -68,30 +54,23 @@ class MovieDatabase:
             return
 
         if name in self.movies:
-            movie_storage.delete_movie(name)  # Delete the movie from persistent storage
-            self.reload_movies()  # Reload movies after deletion
+            del self.movies[name]
             print(f"'{name}' deleted")
         else:
-            print(f"'{name}' not found")
+            print(f"Error: '{name}' not found")
 
 
     def update_movie(self):
-        """Update rating for an existing movie."""
+        """Update the rating of an existing movie."""
         name = input("Enter movie name to update: ").strip()
         if not name:
             print("Error: Movie name cannot be empty")
             return
 
         if name in self.movies:
-            try:
-                rating = float(input("Enter new rating (0-10): "))
-            except ValueError:
-                print("Error: Invalid input for rating.")
-                return
-
+            rating = float(input("Enter new rating: "))
             if 0 <= rating <= 10:
-                movie_storage.update_movie(name, rating)  # Update movie in persistent storage
-                self.reload_movies()  # Reload movies after updating
+                self.movies[name]["rating"] = rating
                 print(f"'{name}' updated to rating {rating}")
             else:
                 print("Error: Rating must be between 0 and 10")
@@ -112,7 +91,7 @@ class MovieDatabase:
             worst_movie = min(self.movies, key=lambda x: self.movies[x]["rating"])
             worst_rating = self.movies[worst_movie]["rating"]
 
-            # Print the results
+            # Print the stats
             print(f"Average rating: {average}")
             print(f"Best movie: {best_movie} (Rating: {best_rating})")
             print(f"Worst movie: {worst_movie} (Rating: {worst_rating})")
@@ -122,31 +101,30 @@ class MovieDatabase:
 
     def random_movie(self):
         """Display a random movie and its rating."""
-        if not self.movies:
-            print("No movies in the database.")
-            return
-
+        import random
         name = random.choice(list(self.movies.keys()))
+        print()
         print(f"Random movie: {name}, Rating: {self.movies[name]['rating']}")
 
 
     def search_movie(self):
-        """Search movie by part of their name (case-insensitive) with fuzzy matching."""
-        search_term = preprocess_title(input("Enter part of movie name to search: ").lower())
+        """Search for movies by a part of their name (case-insensitive) with fuzzy matching."""
+        search_term = input("Enter part of movie name to search: ").lower()
         found_movies = {}
-
+        
         # Iterate through movies and calculate similarity
         for name, details in self.movies.items():
-            processed_name = preprocess_title(name.lower())
-            similarity = fuzz.partial_ratio(search_term, processed_name)
-            if similarity > 80:  # Increase the threshold to reduce false positives
+            similarity = fuzz.partial_ratio(search_term, name.lower())
+            if similarity > 70:  # Adjust similarity threshold as needed
                 found_movies[name] = details
 
         if found_movies:
             for name, details in found_movies.items():
+                print()
                 print(f"{name}: {details['rating']} ({details['year']})")
         else:
             print("No matches found.")
+
 
 
     def movies_sorted_by_rating(self):
@@ -159,10 +137,10 @@ class MovieDatabase:
 def main():
     """Main function to run the movie database application."""
     db = MovieDatabase()
-    print()
+
     while True:
         print("********** My Movies Database **********")
-        print() # Ensure several new lines in the menu for styling purposes
+        print()
         print("Menu:")
         print()
         print("0. Exit")
@@ -174,13 +152,11 @@ def main():
         print("6. Random Movie")
         print("7. Search Movie")
         print("8. Movies sorted by rating")
-        print()
-        choice = input("Enter a choice (0 - 8): ")
-        print()
-        if choice == "0":
 
-            print("Bye!")
+        choice = input("Enter a choice (0 - 8): ")
+        if choice == "0":
             print()
+            print("Bye!")
             break
         elif choice == "1":
             db.list_movies()
