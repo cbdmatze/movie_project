@@ -98,5 +98,74 @@ class MovieDatabase:
     
     def random_movie(self):
         """Display a random movie and its rating"""
+        name = random.choice(list(self.movies.keys()))
+        print()
+        print(f"Rnandom movie: {name}, Rating: {self.movies[name]['rating']}")
+    
+
+    def search_movie(self):
+        """Search movie by part of their name (case-insensitive) with fuzzy matching."""
+        search_term = input("Enter part of movie name to search: ").lower()
+        found_movies = {}
+    
+        # Iterate through movies and calculate similarity
+        for name, details in self.movies.items():
+            similarity = fuzz.partial_ratio(search_term, name.lower())
+            if similarity > 70:
+                found_movies[name] = details 
         
-            
+        if found_movies:
+            for name, details in found_movies.items():
+                print()
+                print(f"{name}: {details['rating']} ({details['year']})")
+        else:
+            print("No matches found.")
+    
+
+def main():
+    """Main function to run the movie database application."""
+    db = MovieDatabase()
+
+    while True:
+        print("********** My Movies Database **********")
+        print()
+        print("Menu:")
+        print()
+        print("0. Exit")
+        print("1. List movies")
+        print("2. Add Movie")
+        print("3. Delete Movie")
+        print("4. Update Movie")
+        print("5. Stats")
+        print("6. Random Movie")
+        print("7. Search Movie")
+        print("8. Movies sorted by rating")
+
+        choice = input("Enter a choice (0 - 8): ")
+        if choice == "0":
+            print()
+            print("Bye!")
+            break
+        elif choice == "1":
+            db.list_movies()
+        elif choice == "2":
+            db.add_movie()
+        elif choice == "3":
+            db.delete_movie()
+        elif choice == "4":
+            db.update_movie()
+        elif choice == "5":
+            db.stats()
+        elif choice == "6":
+            db.random_movie()
+        elif choice == "7":
+            db.search_movie()
+        elif choice == "8":
+            db.movies_sorted_by_rating()
+        else:
+            print("Invalid choice, please try again!")
+        print()  # Print a blank line for spacing
+
+
+if __name__ == "__main__":
+    main()
