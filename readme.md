@@ -31,8 +31,8 @@ Installation
 
 	1.	Clone the repository:
 
-git clone https://github.com/yourusername/movie-database-cli.git
-cd movie-database-cli
+git clone https://github.com/yourusername/movie_project.git
+cd movie_project
 
 
 	2.	Create a virtual environment (optional but recommended):
