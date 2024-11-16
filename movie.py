@@ -1,38 +1,34 @@
 import movie_storage  # Handles the file operations
 import random
-
 from rapidfuzz import fuzz
+
 
 def preprocess_title(title):
     """Remove common words like 'The', 'A', etc. for better fuzzy matching."""
     stop_words = {'the', 'a', 'an'}
     return ' '.join([word for word in title.split() if word.lower() not in stop_words])
 
+
 class MovieDatabase:
     """Class to represent a database of movies with their ratings and release years."""
-
 
     def __init__(self):
         """Initialize the movie database by loading movies from the movie_storage module."""
         self.movies = movie_storage.get_movies()  # Load movies from the persistent storage
 
-
     def reload_movies(self):
         """Reload the movies from the persistent storage after any change."""
         self.movies = movie_storage.get_movies()
-
 
     def list_movies(self):
         """List all movies and their ratings and release years."""
         self.reload_movies()  # Ensure we have the latest movie data
         if self.movies:
-            print(f"{len(self.movies)} movies in total")
-            print()  # Ensure a blank line between header and content
+            print(f"{len(self.movies)} movies in total\n")
             for movie, details in self.movies.items():
                 print(f"{movie}: {details['rating']} ({details['year']})")
         else:
             print("No movies found.")
-
 
     def add_movie(self):
         """Add a new movie and its rating and release year to the database."""
@@ -59,45 +55,66 @@ class MovieDatabase:
         else:
             print("Error: Rating must be between 0 and 10")
 
-
     def delete_movie(self):
-        """Delete a movie from the database."""
+        """Delete a movie from the database using fuzzy matching."""
         name = input("Enter movie name to delete: ").strip()
         if not name:
             print("Error: Movie name cannot be empty")
             return
 
-        if name in self.movies:
-            movie_storage.delete_movie(name)  # Delete the movie from persistent storage
-            self.reload_movies()  # Reload movies after deletion
-            print(f"'{name}' deleted")
-        else:
-            print(f"'{name}' not found")
+        found_movies = {}
+        for movie, details in self.movies.items():
+            similarity = fuzz.partial_ratio(name.lower(), movie.lower())
+            if similarity > 80:  # Increase the threshold to reduce false positives
+                found_movies[movie] = details
 
+        if found_movies:
+            print("Found the following movie(s) to delete:")
+            for movie in found_movies:
+                print(f"{movie}: {found_movies[movie]['rating']} ({found_movies[movie]['year']})")
+
+            confirm = input(f"Are you sure you want to delete '{list(found_movies.keys())[0]}'? (y/n): ").lower()
+            if confirm == 'y':
+                movie_storage.delete_movie(list(found_movies.keys())[0])  # Delete the movie from persistent storage
+                self.reload_movies()  # Reload movies after deletion
+                print(f"'{name}' deleted")
+        else:
+            print("No matches found.")
 
     def update_movie(self):
-        """Update rating for an existing movie."""
+        """Update rating for an existing movie using fuzzy matching."""
         name = input("Enter movie name to update: ").strip()
         if not name:
             print("Error: Movie name cannot be empty")
             return
 
-        if name in self.movies:
-            try:
-                rating = float(input("Enter new rating (0-10): "))
-            except ValueError:
-                print("Error: Invalid input for rating.")
-                return
+        found_movies = {}
+        for movie, details in self.movies.items():
+            similarity = fuzz.partial_ratio(name.lower(), movie.lower())
+            if similarity > 80:  # Increase the threshold to reduce false positives
+                found_movies[movie] = details
 
-            if 0 <= rating <= 10:
-                movie_storage.update_movie(name, rating)  # Update movie in persistent storage
-                self.reload_movies()  # Reload movies after updating
-                print(f"'{name}' updated to rating {rating}")
-            else:
-                print("Error: Rating must be between 0 and 10")
+        if found_movies:
+            print("Found the following movie(s) to update:")
+            for movie in found_movies:
+                print(f"{movie}: {found_movies[movie]['rating']} ({found_movies[movie]['year']})")
+
+            confirm = input(f"Are you sure you want to update '{list(found_movies.keys())[0]}'? (y/n): ").lower()
+            if confirm == 'y':
+                try:
+                    rating = float(input("Enter new rating (0-10): "))
+                except ValueError:
+                    print("Error: Invalid input for rating.")
+                    return
+
+                if 0 <= rating <= 10:
+                    movie_storage.update_movie(list(found_movies.keys())[0], rating)  # Update movie in persistent storage
+                    self.reload_movies()  # Reload movies after updating
+                    print(f"'{name}' updated to rating {rating}")
+                else:
+                    print("Error: Rating must be between 0 and 10")
         else:
-            print(f"Error: '{name}' not found")
-
+            print("No matches found.")
 
     def stats(self):
         """Display statistics about the movies."""
@@ -119,7 +136,6 @@ class MovieDatabase:
         else:
             print("No movies in database")
 
-
     def random_movie(self):
         """Display a random movie and its rating."""
         if not self.movies:
@@ -128,7 +144,6 @@ class MovieDatabase:
 
         name = random.choice(list(self.movies.keys()))
         print(f"Random movie: {name}, Rating: {self.movies[name]['rating']}")
-
 
     def search_movie(self):
         """Search movie by part of their name (case-insensitive) with fuzzy matching."""
@@ -148,7 +163,6 @@ class MovieDatabase:
         else:
             print("No matches found.")
 
-
     def movies_sorted_by_rating(self):
         """Display all movies sorted by rating in descending order."""
         sorted_movies = sorted(self.movies.items(), key=lambda x: x[1]["rating"], reverse=True)
@@ -161,10 +175,8 @@ def main():
     db = MovieDatabase()
     print()
     while True:
-        print("********** My Movies Database **********")
-        print() # Ensure several new lines in the menu for styling purposes
-        print("Menu:")
-        print()
+        print("********** My Movies Database **********\n")
+        print("Menu:\n")
         print("0. Exit")
         print("1. List movies")
         print("2. Add Movie")
@@ -173,14 +185,11 @@ def main():
         print("5. Stats")
         print("6. Random Movie")
         print("7. Search Movie")
-        print("8. Movies sorted by rating")
-        print()
+        print("8. Movies sorted by rating\n")
         choice = input("Enter a choice (0 - 8): ")
         print()
         if choice == "0":
-
-            print("Bye!")
-            print()
+            print("Bye!\n")
             break
         elif choice == "1":
             db.list_movies()
