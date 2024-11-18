@@ -1,6 +1,8 @@
 import json
 from istorage import IStorage
 
+file_path = "/Users/martinawill/movie_project_2/movie_project-2/data.json"
+
 class StorageJson(IStorage):
     """JSON storage implementation for movie data."""
 
