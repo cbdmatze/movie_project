@@ -171,7 +171,7 @@ class MovieDatabase:
 
 def main():
     """Main function to run the movie database application."""
-    storage = StorageJson('data.json')
+    storage = StorageJson('movies.json')
     db = MovieDatabase(storage)  # Passing the storage instance to MovieDatabase
     print()
     while True:
