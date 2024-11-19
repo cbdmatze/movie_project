@@ -1,6 +1,6 @@
 import random
 from rapidfuzz import fuzz
-from storage_json import StorageJson
+from previous_versions.storage_json import StorageJson
 from istorage import IStorage
 
 def preprocess_title(title):

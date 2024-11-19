@@ -1,5 +1,5 @@
-from storage_json import StorageJson
-from movie_app import MovieApp
+from previous_versions.storage_json import StorageJson
+from previous_versions.movie_app import MovieApp
 
 def main():
     """Main function to run the movie database application."""
