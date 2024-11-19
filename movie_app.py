@@ -1,4 +1,5 @@
 from istorage import IStorage
+from rapidfuzz import fuzz
 
 class MovieApp:
     def __init__(self, storage: IStorage):
