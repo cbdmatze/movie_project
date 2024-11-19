@@ -1,4 +1,4 @@
-import movie_storage  # Handles the file operations
+import previous_versions.movie_storage as movie_storage  # Handles the file operations
 import random
 from rapidfuzz import fuzz
 
