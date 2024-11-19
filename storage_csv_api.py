@@ -64,4 +64,23 @@ class StorageCsv(IStorage):
     
     def update_movie(self, title, rating):
         """Update the rating of an existing movie in the CSV file."""
-       
+        movies = self.list_movies()
+        if title in movies:
+            movies[title]['rating'] = rating
+            # Rewrite the CSV file with the updated movie
+            self._write_movies_to_csv(movies)
+        else:
+            raise ValueError(f"Movie '{title}' not found in the database.")
+
+    def _write_movies_to_csv(self, movies):
+        """Helper method to write the current state of movies to the CSV file."""
+        with open(self.file_path, mode='w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=['title', 'rating', 'year', 'poster_url'])
+            writer.writeheader()
+            for title, details in movies.items():
+                writer.writerow({
+                    'title': title,
+                    'rating': details['rating'],
+                    'year': details['year'],
+                    'poster_url': details.get('poster_url', '')
+                })
