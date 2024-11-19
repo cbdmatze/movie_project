@@ -27,7 +27,7 @@ class StorageCsv(IStorage):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     # Populate the dictionary with movie data form CSV
-                    movies[ros['title']] = {
+                    movies[row['title']] = {
                         'rating': float(row['rating']), 
                         'year': int(row['year']),
                         'poster_url': row.get('poster_url', '')
@@ -49,7 +49,7 @@ class StorageCsv(IStorage):
                     'title': title, 
                     'rating': rating, 
                     'year': year, 
-                    'poster_url': pster_url
+                    'poster_url': poster_url
                 })
 
     def delete_movie(self, title):
@@ -61,7 +61,7 @@ class StorageCsv(IStorage):
             self._write_movies_to_csv(movies)
         else:
             raise ValueError(f"Movie: '{title}' not found in the database")
-    
+   
     def update_movie(self, title, rating):
         """Update the rating of an existing movie in the CSV file."""
         movies = self.list_movies()

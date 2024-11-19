@@ -38,5 +38,10 @@
     "Star Wars: Episode V": {
         "rating": 8.7,
         "year": 1980
+    },
+    "The Little World of Don Camillo": {
+        "year": 1952,
+        "rating": 7.6,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BY2YxZDhlZTgtZTI0Ni00OGJjLThjYTYtM2Q4NjFmOWZhMTY4XkEyXkFqcGc@._V1_SX300.jpg"
     }
 }
