@@ -1,7 +1,7 @@
 import random
 from rapidfuzz import fuzz
 from previous_versions.storage_json import StorageJson
-from istorage import IStorage
+from data.storage.istorage import IStorage
 
 def preprocess_title(title):
     """Remove common words like 'The', 'A', etc. for better fuzzy matching."""

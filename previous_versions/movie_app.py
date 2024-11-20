@@ -1,4 +1,4 @@
-from istorage import IStorage
+from data.storage.istorage import IStorage
 from rapidfuzz import fuzz
 
 class MovieApp:

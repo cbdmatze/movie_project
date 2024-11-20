@@ -1,7 +1,7 @@
 import requests
 import json
 from rapidfuzz import fuzz
-from istorage import IStorage
+from storage.istorage import IStorage
 from dotenv import load_dotenv
 import os
 
@@ -146,26 +146,29 @@ class MovieApp:
             # Generate the movie grid
             movie_grid_html = ""
             for title, details in movies.items():
-                poster_url = details.get('poster_url', 'default_poster.png')  # Use a default image if poster_url is missing
+                # Safely retrieve poster URL or use a placeholder
+                poster_url = details.get('poster_url', 'https://via.placeholder.com/300x450?text=No+Poster')
+                year = details.get('year', 'Unknown')  # Safeguard in case 'year' is missing
                 movie_grid_html += f'''
                 <div class="movie-item">
-                    <img src="{details['poster_url', 'default_poster.png']}" alt="{title} Poster">
+                    <img src="{poster_url}" alt="{title} Poster">
                     <h3>{title}</h3>
-                    <p>{details['year']}</p>
+                    <p>{year}</p>
                 </div>
                 '''
 
-            # Replace the movie grid placeholder
+            # Replace the movie grid placeholder in the template
             template_content = template_content.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
             # Write the final HTML to a file
             with open('index.html', 'w', encoding='utf-8') as output_file:
                 output_file.write(template_content)
 
-            print("Website was generated successfully.")
+            print("Website generated successfully.")
 
         except FileNotFoundError:
             print("Error: Template file or CSS not found.")
+
 
     def run(self):
         """Run the movie app menu."""
