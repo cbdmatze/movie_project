@@ -1,0 +1,17 @@
+{
+    "The A-Team": {
+        "year": 2010,
+        "rating": 6.7,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BMTc4ODc4NTQ1N15BMl5BanBnXkFtZTcwNDUxODUyMw@@._V1_SX300.jpg"
+    },
+    "The Little World of Don Camillo": {
+        "year": 1952,
+        "rating": 7.6,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BY2YxZDhlZTgtZTI0Ni00OGJjLThjYTYtM2Q4NjFmOWZhMTY4XkEyXkFqcGc@._V1_SX300.jpg"
+    },
+    "James Bond 007: Yesterday and Today": {
+        "year": 1996,
+        "rating": 7.6,
+        "poster_url": "N/A"
+    }
+}
