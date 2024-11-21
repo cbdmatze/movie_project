@@ -136,7 +136,7 @@ class MovieApp:
         for name, details in sorted_movies:
             print(f"{name}: {details['rating']} ({details['year']})")
 
-    def generate_website(self):
+    def generate_website(self, output_file):
         """Generate an HTML website from the list of movies."""
         movies = self._storage.list_movies()
         try:
@@ -170,49 +170,51 @@ class MovieApp:
             template_content = template_content.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
             # Write the final HTML to a file
-            output_path = os.path.join(current_dir, "generated", "index.html")
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)  # Ensure the 'generated' directory exists
-            with open(output_path, "w", encoding="utf-8") as output_file:
+            output_path = os.path.join(current_dir,output_file)
+            with open(output_path, 'w', encoding='utf-8') as output_file:
                 output_file.write(template_content)
 
-            print(f"Website generated successfully at {output_path}")
+            print(f"Website generated successfully: {output_file}")
 
         except FileNotFoundError:
-            print("Error: Template file not found. Please ensure 'index_template.html' exists in the templates directory.")
+            print("Error: Template fiel or CSS not found.")
 
-    def run(self):
-        """Run the movie app menu."""
-        while True:
-            print("\n********** My Movies Database **********\n")
-            print("Menu:\n")
-            print("0. Exit")
-            print("1. List movies")
-            print("2. Add Movie")
-            print("3. Delete Movie")
-            print("4. Movie Stats")
-            print("5. Search Movie")
-            print("6. Movies Sorted by Rating")
-            print("9. Generate Website\n")
+def run(self):
+    """Run the movie app menu."""
+    while True:
+        print("\n********** My Movies Database **********\n")
+        print("Menu:\n")
+        print("0. Exit")
+        print("1. List movies")
+        print("2. Add Movie")
+        print("3. Delete Movie")
+        print("4. Movie Stats")
+        print("5. Search Movie")
+        print("6. Movies Sorted by Rating")
+        print("9. Generate Website\n")
 
-            choice = input("Enter a choice (0 - 9): ")
-            print()
+        choice = input("Enter a choice (0 - 9): ")
+        print()
 
-            if choice == "0":
-                print("Bye!\n")
-                break
-            elif choice == "1":
-                self._command_list_movies()
-            elif choice == "2":
-                self._command_add_movie()
-            elif choice == "3":
-                self._command_delete_movie()
-            elif choice == "4":
-                self._command_movie_stats()
-            elif choice == "5":
-                self._command_search_movie()
-            elif choice == "6":
-                self._command_movies_sorted_by_rating()
-            elif choice == "9":
-                self.generate_website()
-            else:
-                print("Invalid choice. Please select a valid option from the menu.\n")
+        if choice == "0":
+            print("Bye!\n")
+            break
+        elif choice == "1":
+            self._command_list_movies()
+        elif choice == "2":
+            self._command_add_movie()
+        elif choice == "3":
+            self._command_delete_movie()
+        elif choice == "4":
+            self._command_movie_stats()
+        elif choice == "5":
+            self._command_search_movie()
+        elif choice == "6":
+            self._command_movies_sorted_by_rating()
+        elif choice == "9":
+            user_name = os.path.splitext(os.path.basename(self._storage.storage_file))[0]
+            html_filename = f"{user_name}_index.html"
+            self.generate_website(html_filename)
+        else:
+            print("Invalid choice. Please select a valid option from the menu.\n")
+
