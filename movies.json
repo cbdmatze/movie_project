@@ -1,0 +1,17 @@
+{
+    "Die Hard": {
+        "year": 1988,
+        "rating": 8.2,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BMGNlYmM1NmQtYWExMS00NmRjLTg5ZmEtMmYyYzJkMzljYWMxXkEyXkFqcGc@._V1_SX300.jpg"
+    },
+    "Hellboy": {
+        "year": 2004,
+        "rating": 6.9,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BMWZhODhmZjktNmIzNC00NGRmLTkyMDEtODVmMzVmNGQwYWU0XkEyXkFqcGc@._V1_SX300.jpg"
+    },
+    "James Bond": {
+        "year": 2015,
+        "rating": 5.5,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BM2IwZDRiOTAtNTUxOC00ZWQxLThlYTYtZTM2NTRmMjEzNmQwXkEyXkFqcGdeQXVyODAzNzAwOTU@._V1_SX300.jpg"
+    }
+}
