@@ -15,6 +15,7 @@ class MovieApp:
         self._storage = storage
         self.api_key = os.getenv("OMDB_API_KEY")  # Fetch API key from environment
 
+
     def _command_list_movies(self):
         """List all movies in the database."""
         movies = self._storage.list_movies()
@@ -24,6 +25,7 @@ class MovieApp:
                 print(f"{movie}: {details['rating']} ({details['year']})")
         else:
             print("No movies found.")
+
 
     def _fetch_movie_from_api(self, title):
         """Fetch movie details from the OMDb API."""
@@ -37,11 +39,15 @@ class MovieApp:
             if movie_data.get("Response") == "False":
                 raise ValueError(f"Movie '{title}' not found in OMDb")
 
+            # Handle cases where IMDb rating is 'N/A'
+            imdb_rating = movie_data["imdbRating"]
+            rating = float(imdb_rating) if imdb_rating != "N/A" else 0.0
+
             # Extract relevant data
             return {
                 "title": movie_data["Title"],
                 "year": int(movie_data["Year"]),
-                "rating": float(movie_data["imdbRating"]),
+                "rating": rating,
                 "poster_url": movie_data.get("Poster", ""),  # Fallback to empty string if poster is not available
             }
         except requests.exceptions.RequestException as e:
@@ -49,6 +55,7 @@ class MovieApp:
         except ValueError as e:
             print(e)
             return None
+
 
     def _command_add_movie(self):
         """Add a new movie to the database."""
@@ -70,6 +77,13 @@ class MovieApp:
         print(
             f"'{movie_data['title']}' added with rating {movie_data['rating']}, year {movie_data['year']}, and poster URL."
         )
+
+        # Automatically generate and update the website
+        user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
+        html_filename = f"{user_name}_index.html"
+        self.generate_website(html_filename)
+        print("Website updated automatically after adding the movie.")
+
 
     def _command_delete_movie(self):
         """Delete a movie from the database."""
@@ -94,6 +108,12 @@ class MovieApp:
             if confirm == "y":
                 self._storage.delete_movie(list(found_movies.keys())[0])
                 print(f"'{list(found_movies.keys())[0]}' deleted")
+
+                # Automatically generate and update the website
+                user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
+                html_filename = f"{user_name}_index.html"
+                self.generate_website(html_filename)
+                print("Website updated automatically after deleting the movie.")
         else:
             print("No matches found.")
 
@@ -179,42 +199,42 @@ class MovieApp:
         except FileNotFoundError:
             print("Error: Template fiel or CSS not found.")
 
-def run(self):
-    """Run the movie app menu."""
-    while True:
-        print("\n********** My Movies Database **********\n")
-        print("Menu:\n")
-        print("0. Exit")
-        print("1. List movies")
-        print("2. Add Movie")
-        print("3. Delete Movie")
-        print("4. Movie Stats")
-        print("5. Search Movie")
-        print("6. Movies Sorted by Rating")
-        print("9. Generate Website\n")
+    def run(self):
+        """Run the movie app menu."""
+        while True:
+            print("\n********** My Movies Database **********\n")
+            print("Menu:\n")
+            print("0. Exit")
+            print("1. List movies")
+            print("2. Add Movie")
+            print("3. Delete Movie")
+            print("4. Movie Stats")
+            print("5. Search Movie")
+            print("6. Movies Sorted by Rating")
+            print("9. Generate Website\n")
 
-        choice = input("Enter a choice (0 - 9): ")
-        print()
+            choice = input("Enter a choice (0 - 9): ")
+            print()
 
-        if choice == "0":
-            print("Bye!\n")
-            break
-        elif choice == "1":
-            self._command_list_movies()
-        elif choice == "2":
-            self._command_add_movie()
-        elif choice == "3":
-            self._command_delete_movie()
-        elif choice == "4":
-            self._command_movie_stats()
-        elif choice == "5":
-            self._command_search_movie()
-        elif choice == "6":
-            self._command_movies_sorted_by_rating()
-        elif choice == "9":
-            user_name = os.path.splitext(os.path.basename(self._storage.storage_file))[0]
-            html_filename = f"{user_name}_index.html"
-            self.generate_website(html_filename)
-        else:
-            print("Invalid choice. Please select a valid option from the menu.\n")
+            if choice == "0":
+                print("Bye!\n")
+                break
+            elif choice == "1":
+                self._command_list_movies()
+            elif choice == "2":
+                self._command_add_movie()
+            elif choice == "3":
+                self._command_delete_movie()
+            elif choice == "4":
+                self._command_movie_stats()
+            elif choice == "5":
+                self._command_search_movie()
+            elif choice == "6":
+                self._command_movies_sorted_by_rating()
+            elif choice == "9":
+                user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
+                html_filename = f"{user_name}_index.html"
+                self.generate_website(html_filename)
+            else:
+                print("Invalid choice. Please select a valid option from the menu.\n")
 

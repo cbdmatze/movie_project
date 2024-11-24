@@ -30,7 +30,7 @@ def main():
     storage_file = args.storage_file
 
     # Check the file extension and select the appropriate storyge type
-    file_extension = os.path.spolitext(storage_file)[-1].lower()
+    file_extension = os.path.splitext(storage_file)[-1].lower()
 
     if file_extension == ".json":
         storage = StorageJson(storage_file)
