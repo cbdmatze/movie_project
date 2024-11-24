@@ -4,6 +4,7 @@ from storage.storage_json_api import StorageJson
 from storage.storage_csv_api import StorageCsv
 from movie_app_api import MovieApp
 
+
 def main():
     """
     The main function to run the Movie App. It accepts a command-line argument

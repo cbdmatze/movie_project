@@ -1,12 +1,14 @@
 import csv
 from storage.istorage import IStorage
 
+
 class StorageCsv(IStorage):
     """Class to handle movie storage using CSV files."""
 
     def __init__(self, file_path):
         """Initialize the storage with the path to the CSV file."""
         self.file_path = file_path
+
 
     def list_movies(self):
         """
@@ -37,6 +39,7 @@ class StorageCsv(IStorage):
             pass
         return movies
     
+
     def add_movie(self, title, year, rating, poster_url="https://via.placeholder.com/300x450?text=No+Poster"):
         """Add a new movie to the CSV file."""
         # Append the new movie to the CSV file
@@ -52,6 +55,7 @@ class StorageCsv(IStorage):
                 'poster_url': poster_url
             })
 
+
     def delete_movie(self, title):
         """Delete a moie from the CSV file."""
         movies = self.list_movies()
@@ -62,6 +66,7 @@ class StorageCsv(IStorage):
         else:
             raise ValueError(f"Movie: '{title}' not found in the database")
    
+
     def update_movie(self, title, rating):
         """Update the rating of an existing movie in the CSV file."""
         movies = self.list_movies()
@@ -71,6 +76,7 @@ class StorageCsv(IStorage):
             self._write_movies_to_csv(movies)
         else:
             raise ValueError(f"Movie '{title}' not found in the database.")
+
 
     def _write_movies_to_csv(self, movies):
         """Helper method to write the current state of movies to the CSV file."""

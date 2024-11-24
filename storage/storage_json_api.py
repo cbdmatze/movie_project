@@ -1,6 +1,6 @@
-
 import json
 from storage.istorage import IStorage
+
 
 class StorageJson(IStorage):
     """JSON storage implementation for movie data."""
@@ -8,6 +8,7 @@ class StorageJson(IStorage):
     def __init__(self, file_path):
         """Initialize with a specific JSON file path."""
         self.file_path = file_path
+
 
     def _load_movies(self):
         """Helper method to load movies from the JSON file."""
@@ -18,14 +19,17 @@ class StorageJson(IStorage):
             print("Error: movies.json is empty or corrupted. Initializing empty data.")
             return {}  # Return empty dictionary if the file doesn't exist or is invalid
 
+
     def _save_movies(self, movies):
         """Helper method to save movies to the JSON file."""
         with open(self.file_path, 'w', encoding='utf-8') as f:
             json.dump(movies, f, indent=4)
 
+
     def list_movies(self):
         """List all movies from the JSON file."""
         return self._load_movies()
+
 
     def add_movie(self, title, year, rating, poster_url=""):
         """Add a new movie to the JSON file."""
@@ -41,6 +45,7 @@ class StorageJson(IStorage):
         }
         self._save_movies(movies)
 
+
     def delete_movie(self, title):
         """Delete a movie from the JSON file."""
         movies = self._load_movies()
@@ -49,6 +54,7 @@ class StorageJson(IStorage):
             self._save_movies(movies)
         else:
             raise ValueError(f"Movie '{title}' not found.")
+
 
     def update_movie(self, title, rating):
         """Update the rating of an existing movie."""

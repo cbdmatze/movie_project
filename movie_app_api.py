@@ -5,6 +5,7 @@ from rapidfuzz import fuzz
 from storage.istorage import IStorage
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -117,6 +118,7 @@ class MovieApp:
         else:
             print("No matches found.")
 
+
     def _command_movie_stats(self):
         """Display statistics about the movies."""
         movies = self._storage.list_movies()
@@ -133,6 +135,7 @@ class MovieApp:
         else:
             print("No movies in the database.")
 
+
     def _command_search_movie(self):
         """Search movies by part of their name (case-insensitive) with fuzzy matching."""
         search_term = input("Enter part of the movie name to search: ").lower()
@@ -147,6 +150,7 @@ class MovieApp:
                 print(f"{name}: {details['rating']} ({details['year']})")
         else:
             print("No matches found.")
+
 
     def _command_movies_sorted_by_rating(self):
         """Display all movies sorted by rating in descending order."""
@@ -199,6 +203,7 @@ class MovieApp:
         except FileNotFoundError:
             print("Error: Template fiel or CSS not found.")
 
+
     def run(self):
         """Run the movie app menu."""
         while True:
@@ -237,4 +242,3 @@ class MovieApp:
                 self.generate_website(html_filename)
             else:
                 print("Invalid choice. Please select a valid option from the menu.\n")
-
