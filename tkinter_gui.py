@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, Menu
-from movie_app_api import MovieApp
 from movie_app_api_gui import MovieGUI
-
+from movie_app_api import MovieApp
 
 class MovieAppTkGui:
     def __init__(self, root, movie_app):
