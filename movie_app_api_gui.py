@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, Menu
 import webbrowser
+from movie_app_api import MovieApp
+from storage.istorage import IStorage
 
 
 class MovieGUI:
