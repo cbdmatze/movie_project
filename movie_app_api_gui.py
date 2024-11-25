@@ -2,16 +2,22 @@ import tkinter as tk
 from tkinter import Menu
 import webbrowser
 from movie_app_api import MovieApp
-from movie_app_api_gui import MovieGUI
-from tkinter_gui import MovieAppTkGui
 
 
 class MovieGUI:
+    """
+    The GUI class that handles displaying movies, interacting with the
+    movie storage, and providing user functionality like watching and deleting movies.
+    """
     def __init__(self, master, storage):
+        """
+        Initialize the Movie GUI with the given master (Tkinter window)
+        and movie storage.
+        """
         self.master = master
         self.storage = storage
 
-        # Create the move list frame
+        # Create the movie list frame
         self.frame = tk.Frame(master)
         self.frame.pack()
 
@@ -29,33 +35,35 @@ class MovieGUI:
         # Load and display the movies
         self.refresh_movie_list()
 
-    
     def refresh_movie_list(self):
-        # Clear the listbox
+        """
+        Refresh the listbox with the movie titles from the storage.
+        """
         self.movie_listbox.delete(0, tk.END)
-
-        # Load movies from the storage and display them
         movies = self.storage.list_movies()
         for movie in movies:
             self.movie_listbox.insert(tk.END, movie)
 
-    
     def show_context_menu(self, event):
-        # Show the right-click menu
+        """
+        Show the right-click menu for the movie listbox.
+        """
         self.menu.post(event.x_root, event.y_root)
-    
 
     def watch_movie(self):
-        # Get selected movie and redirect to streaming platform
+        """
+        Get the selected movie and open the streaming URL in the browser.
+        """
         selected = self.movie_listbox.curselection()
         if selected:
             movie_title = self.movie_listbox.get(selected)
             streaming_url = f"https://justwatch.com/search?q={movie_title.replace(' ', '+')}"
             webbrowser.open(streaming_url)
 
-
     def delete_movie(self):
-        # Get selected movie and delete it 
+        """
+        Delete the selected movie from the storage and refresh the list.
+        """
         selected = self.movie_listbox.curselection()
         if selected:
             movie_title = self.movie_listbox.get(selected)
