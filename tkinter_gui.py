@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog, Menu
+import webbrowser
 from movie_app_api import MovieApp
 
 
@@ -27,8 +28,12 @@ class MovieAppTkGui:
         # Populate the listbox with movies from the database
         self.populate_movie_list()
 
-        # Bind right-click event for the context menu
+        # Bind right-click event for the context menu (Windows/Linux: Button-3, macOS: Button-2)
         self.movie_listbox.bind("<Button-3>", self.show_context_menu)
+        self.movie_listbox.bind("<Button-2>", self.show_context_menu)  # For macOS right-click
+
+        # Bind double-click event to open a movie in the browser
+        self.movie_listbox.bind("<Double-1>", self.watch_movie)
 
     def create_context_menu(self):
         """
@@ -47,10 +52,12 @@ class MovieAppTkGui:
         """
         Show the context menu on right-click.
         """
+        print("Right-click detected")  # Debugging statement
         try:
-            self.context_menu.tk_popup(event.x_root, event.y_root)
-        finally:
-            self.context_menu.grab_release()
+            # Using 'post' instead of 'tk_popup' to ensure cross-platform compatibility
+            self.context_menu.post(event.x_root, event.y_root)
+        except Exception as e:
+            print(f"Error showing context menu: {e}")
 
     def populate_movie_list(self):
         """
@@ -110,6 +117,20 @@ class MovieAppTkGui:
         """
         self.movie_app.generate_website()
         messagebox.showinfo("Website Generated", "The movie website has been updated.")
+
+    def watch_movie(self, event):
+        """
+        Handle double-click on a movie to watch it.
+        """
+        print("Double-click detected")  # Debugging statement
+        selected = self.movie_listbox.curselection()
+        if selected:
+            movie_title = self.movie_listbox.get(selected)
+            if movie_title:
+                # Prepare the 123MoviesFree URL (ensure it’s correctly formatted)
+                streaming_url = f"https://ww4.123moviesfree.net/search/?q={movie_title.replace(' ', '+')}"
+                print(f"Redirecting to: {streaming_url}")  # Debugging: see URL before opening
+                webbrowser.open(streaming_url)
 
     @staticmethod
     def run_gui(movie_app):

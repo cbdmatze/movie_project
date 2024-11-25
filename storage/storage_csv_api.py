@@ -9,7 +9,6 @@ class StorageCsv(IStorage):
         """Initialize the storage with the path to the CSV file."""
         self.file_path = file_path
 
-
     def list_movies(self):
         """
         Returns a dictionary of dictionaries containing the movies.
@@ -28,20 +27,23 @@ class StorageCsv(IStorage):
             with open(self.file_path, mode='r', newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    # Populate the dictionary with movie data form CSV
+                    # Populate the dictionary with movie data from CSV
                     movies[row['title']] = {
                         'rating': float(row['rating']), 
                         'year': int(row['year']),
-                        'poster_url': row.get('poster_url', '')
+                        'poster_url': row.get('poster_url', 'https://via.placeholder.com/300x450?text=No+Poster')
                     }
         except FileNotFoundError:
             # File doesn't exist yet, we return an empty dictionary
             pass
         return movies
-    
 
     def add_movie(self, title, year, rating, poster_url="https://via.placeholder.com/300x450?text=No+Poster"):
         """Add a new movie to the CSV file."""
+        movies = self.list_movies()
+        if title in movies:
+            raise ValueError(f"Movie '{title}' already exists.")
+
         # Append the new movie to the CSV file
         with open(self.file_path, mode='a', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['title', 'rating', 'year', 'poster_url'])
@@ -55,17 +57,15 @@ class StorageCsv(IStorage):
                 'poster_url': poster_url
             })
 
-
     def delete_movie(self, title):
-        """Delete a moie from the CSV file."""
+        """Delete a movie from the CSV file."""
         movies = self.list_movies()
         if title in movies:
             del movies[title]
             # Rewrite the CSV file without the deleted movie
             self._write_movies_to_csv(movies)
         else:
-            raise ValueError(f"Movie: '{title}' not found in the database")
-   
+            raise ValueError(f"Movie '{title}' not found in the database.")
 
     def update_movie(self, title, rating):
         """Update the rating of an existing movie in the CSV file."""
@@ -77,7 +77,6 @@ class StorageCsv(IStorage):
         else:
             raise ValueError(f"Movie '{title}' not found in the database.")
 
-
     def _write_movies_to_csv(self, movies):
         """Helper method to write the current state of movies to the CSV file."""
         with open(self.file_path, mode='w', newline='', encoding='utf-8') as csvfile:
@@ -88,5 +87,9 @@ class StorageCsv(IStorage):
                     'title': title,
                     'rating': details['rating'],
                     'year': details['year'],
-                    'poster_url': details.get('poster_url', '')
+                    'poster_url': details.get('poster_url', 'https://via.placeholder.com/300x450?text=No+Poster')
                 })
+
+    def get_file_path(self):
+        """Return the file path where the CSV file is stored."""
+        return self.file_path

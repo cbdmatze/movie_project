@@ -1,32 +1,17 @@
 import os
 import requests
-import json
 from rapidfuzz import fuzz
 from storage.istorage import IStorage
 from dotenv import load_dotenv
 
-
 # Load environment variables from .env file
 load_dotenv()
-
 
 class MovieApp:
     def __init__(self, storage: IStorage):
         """Initialize the MovieApp with a storage instance."""
         self._storage = storage
         self.api_key = os.getenv("OMDB_API_KEY")  # Fetch API key from environment
-
-
-    def _command_list_movies(self):
-        """List all movies in the database."""
-        movies = self._storage.list_movies()
-        if movies:
-            print(f"{len(movies)} movies in total\n")
-            for movie, details in movies.items():
-                print(f"{movie}: {details['rating']} ({details['year']})")
-        else:
-            print("No movies found.")
-
 
     def _fetch_movie_from_api(self, title):
         """Fetch movie details from the OMDb API."""
@@ -36,69 +21,55 @@ class MovieApp:
             response.raise_for_status()
             movie_data = response.json()
 
-            # Check if the movie was found
             if movie_data.get("Response") == "False":
                 raise ValueError(f"Movie '{title}' not found in OMDb")
 
-            # Handle cases where IMDb rating is 'N/A'
             imdb_rating = movie_data["imdbRating"]
             rating = float(imdb_rating) if imdb_rating != "N/A" else 0.0
 
-            # Extract relevant data
             return {
                 "title": movie_data["Title"],
                 "year": int(movie_data["Year"]),
                 "rating": rating,
-                "poster_url": movie_data.get("Poster", ""),  # Fallback to empty string if poster is not available
+                "poster_url": movie_data.get("Poster", ""),
             }
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching data from OMDb API: {e}")
-        except ValueError as e:
-            print(e)
+        except (requests.exceptions.RequestException, ValueError) as e:
+            print(f"Error: {e}")
             return None
 
-
-    def _command_add_movie(self):
+    def add_movie(self, movie_title):
         """Add a new movie to the database."""
-        name = input("Enter movie name: ").strip()
-        if not name:
+        if not movie_title:
             print("Error: Movie name cannot be empty!")
             return
-        if name in self._storage.list_movies():
-            print(f"Error: '{name}' already exists!")
+
+        # Check if movie already exists
+        if movie_title in self._storage.list_movies():
+            print(f"Error: '{movie_title}' already exists!")
             return
 
-        # Fetch movie details from the API
-        movie_data = self._fetch_movie_from_api(name)
+        movie_data = self._fetch_movie_from_api(movie_title)
         if not movie_data:
             return
 
-        # Add the movie to storage
         self._storage.add_movie(movie_data["title"], movie_data["year"], movie_data["rating"], movie_data["poster_url"])
-        print(
-            f"'{movie_data['title']}' added with rating {movie_data['rating']}, year {movie_data['year']}, and poster URL."
-        )
+        print(f"'{movie_data['title']}' added with rating {movie_data['rating']}, year {movie_data['year']}.")
 
-        # Automatically generate and update the website
-        user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
-        html_filename = f"{user_name}_index.html"
-        self.generate_website(html_filename)
-        print("Website updated automatically after adding the movie.")
+        # Update website after movie is added
+        self._update_website_after_change()
 
-
-    def _command_delete_movie(self):
+    def delete_movie(self, movie_title):
         """Delete a movie from the database."""
-        name = input("Enter movie name to delete: ").strip()
-        if not name:
+        if not movie_title:
             print("Error: Movie name cannot be empty")
             return
 
         movies = self._storage.list_movies()
-        found_movies = {}
-        for movie, details in movies.items():
-            similarity = fuzz.partial_ratio(name.lower(), movie.lower())
-            if similarity > 80:
-                found_movies[movie] = details
+        found_movies = {
+            movie: details
+            for movie, details in movies.items()
+            if fuzz.partial_ratio(movie_title.lower(), movie.lower()) > 80
+        }
 
         if found_movies:
             print("Found the following movie(s) to delete:")
@@ -110,78 +81,35 @@ class MovieApp:
                 self._storage.delete_movie(list(found_movies.keys())[0])
                 print(f"'{list(found_movies.keys())[0]}' deleted")
 
-                # Automatically generate and update the website
-                user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
-                html_filename = f"{user_name}_index.html"
-                self.generate_website(html_filename)
-                print("Website updated automatically after deleting the movie.")
+                # Update website after movie is deleted
+                self._update_website_after_change()
         else:
             print("No matches found.")
 
-
-    def _command_movie_stats(self):
-        """Display statistics about the movies."""
-        movies = self._storage.list_movies()
-        if movies:
-            ratings = [details["rating"] for details in movies.values()]
-            average = round(sum(ratings) / len(ratings), 2)
-
-            best_movie = max(movies, key=lambda x: movies[x]["rating"])
-            worst_movie = min(movies, key=lambda x: movies[x]["rating"])
-
-            print(f"Average rating: {average}")
-            print(f"Best movie: {best_movie} (Rating: {movies[best_movie]['rating']})")
-            print(f"Worst movie: {worst_movie} (Rating: {movies[worst_movie]['rating']})")
-        else:
-            print("No movies in the database.")
-
-
-    def _command_search_movie(self):
-        """Search movies by part of their name (case-insensitive) with fuzzy matching."""
-        search_term = input("Enter part of the movie name to search: ").lower()
-        found_movies = {}
-        for name, details in self._storage.list_movies().items():
-            similarity = fuzz.partial_ratio(search_term, name.lower())
-            if similarity > 80:
-                found_movies[name] = details
-
-        if found_movies:
-            for name, details in found_movies.items():
-                print(f"{name}: {details['rating']} ({details['year']})")
-        else:
-            print("No matches found.")
-
-
-    def _command_movies_sorted_by_rating(self):
-        """Display all movies sorted by rating in descending order."""
-        sorted_movies = sorted(
-            self._storage.list_movies().items(), key=lambda x: x[1]["rating"], reverse=True
-        )
-        for name, details in sorted_movies:
-            print(f"{name}: {details['rating']} ({details['year']})")
+    def _update_website_after_change(self):
+        """Helper method to generate the website after adding or deleting a movie."""
+        user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
+        html_filename = f"{user_name}_index.html"
+        self.generate_website(html_filename)
+        print("Website updated automatically.")
 
     def generate_website(self, output_file):
         """Generate an HTML website from the list of movies."""
         movies = self._storage.list_movies()
         try:
-            # Dynamically resolve the file path for the template
             current_dir = os.path.dirname(__file__)
             template_path = os.path.join(current_dir, "templates", "index_template.html")
 
-            # Load the HTML template
             with open(template_path, "r", encoding="utf-8") as template_file:
                 template_content = template_file.read()
 
-            # Replace the title placeholder
             website_title = "My Movie App"
             template_content = template_content.replace("__TEMPLATE_TITLE__", website_title)
 
-            # Generate the movie grid
             movie_grid_html = ""
             for title, details in movies.items():
-                # Safely retrieve poster URL or use a placeholder
                 poster_url = details.get("poster_url", "https://via.placeholder.com/300x450?text=No+Poster")
-                year = details.get("year", "Unknown")  # Safeguard in case 'year' is missing
+                year = details.get("year", "Unknown")
                 movie_grid_html += f"""
                 <div class="movie-item">
                     <img src="{poster_url}" alt="{title} Poster">
@@ -190,19 +118,16 @@ class MovieApp:
                 </div>
                 """
 
-            # Replace the movie grid placeholder in the template
             template_content = template_content.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
-            # Write the final HTML to a file
-            output_path = os.path.join(current_dir,output_file)
+            output_path = os.path.join(current_dir, output_file)
             with open(output_path, 'w', encoding='utf-8') as output_file:
                 output_file.write(template_content)
 
             print(f"Website generated successfully: {output_file}")
 
         except FileNotFoundError:
-            print("Error: Template fiel or CSS not found.")
-
+            print("Error: Template file or CSS not found.")
 
     def run(self):
         """Run the movie app menu."""
@@ -227,9 +152,11 @@ class MovieApp:
             elif choice == "1":
                 self._command_list_movies()
             elif choice == "2":
-                self._command_add_movie()
+                movie_title = input("Enter movie title to add: ").strip()
+                self.add_movie(movie_title)
             elif choice == "3":
-                self._command_delete_movie()
+                movie_title = input("Enter movie title to delete: ").strip()
+                self.delete_movie(movie_title)
             elif choice == "4":
                 self._command_movie_stats()
             elif choice == "5":
@@ -242,3 +169,52 @@ class MovieApp:
                 self.generate_website(html_filename)
             else:
                 print("Invalid choice. Please select a valid option from the menu.\n")
+
+    def _command_list_movies(self):
+        """List all movies in the database."""
+        movies = self._storage.list_movies()
+        if movies:
+            print(f"{len(movies)} movies in total\n")
+            for movie, details in movies.items():
+                print(f"{movie}: {details['rating']} ({details['year']})")
+        else:
+            print("No movies found.")
+
+    def _command_movie_stats(self):
+        """Display statistics about the movies."""
+        movies = self._storage.list_movies()
+        if movies:
+            ratings = [details["rating"] for details in movies.values()]
+            average = round(sum(ratings) / len(ratings), 2)
+
+            best_movie = max(movies, key=lambda x: movies[x]["rating"])
+            worst_movie = min(movies, key=lambda x: movies[x]["rating"])
+
+            print(f"Average rating: {average}")
+            print(f"Best movie: {best_movie} (Rating: {movies[best_movie]['rating']})")
+            print(f"Worst movie: {worst_movie} (Rating: {movies[worst_movie]['rating']})")
+        else:
+            print("No movies in the database.")
+    
+    def _command_search_movie(self):
+        """Search movies by part of their name (case-insensitive) with fuzzy matching."""
+        search_term = input("Enter part of the movie name to search: ").lower()
+        found_movies = {
+            name: details
+            for name, details in self._storage.list_movies().items()
+            if fuzz.partial_ratio(search_term, name.lower()) > 80
+        }
+
+        if found_movies:
+            for name, details in found_movies.items():
+                print(f"{name}: {details['rating']} ({details['year']})")
+        else:
+            print("No matches found.")
+
+    def _command_movies_sorted_by_rating(self):
+        """Display all movies sorted by rating in descending order."""
+        sorted_movies = sorted(
+            self._storage.list_movies().items(), key=lambda x: x[1]["rating"], reverse=True
+        )
+        for name, details in sorted_movies:
+            print(f"{name}: {details['rating']} ({details['year']})")

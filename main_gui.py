@@ -1,12 +1,10 @@
-
 import argparse
 import os
 import tkinter as tk
-from movie_app_api_gui import MovieGUI
-from tkinter_gui import MovieAppTkGui
+from tkinter_gui import MovieAppTkGui  # Import the Tkinter GUI class
 from storage.storage_json_api import StorageJson
 from storage.storage_csv_api import StorageCsv
-from movie_app_api import MovieApp
+from movie_app_api import MovieApp  # Import the backend movie logic
 
 
 def main():
@@ -44,21 +42,21 @@ def main():
     else:
         print(f"Error: Unsupported file extension '{file_extension}'. Only .json and .csv are supported.")
         return
-    
+
+    # Initialize the MovieApp backend with the appropriate storage
+    movie_app = MovieApp(storage)
+
     # Create the main application window for Tkinter
     root = tk.Tk()
     root.title("My Movie App")
 
-    # Initialize the movie GUI and pass the storage to it
-    app = MovieGUI(root, storage)
-    
-    # Run the Tkinter GUI loop
-    root.mainloop()
+    # Initialize the Tkinter-based GUI and pass the MovieApp backend to it
+    MovieAppTkGui.run_gui(movie_app)
 
-    # Generate the website when necessary
+    # Generate the website after the Tkinter main loop ends (if necessary)
     user_name = os.path.splitext(os.path.basename(storage_file))[0]
     html_filename = f"{user_name}_index.html"
-    app.generate_website(html_filename)
+    movie_app.generate_website(html_filename)
 
 
 if __name__ == "__main__":
