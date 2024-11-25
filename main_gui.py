@@ -1,3 +1,4 @@
+
 import argparse
 import os
 import tkinter as tk
@@ -11,9 +12,9 @@ from movie_app_api import MovieApp
 def main():
     """
     The main function to run the Movie App. It accepts a command-line argument
-    that specifies the path to the storage file (JSON or CSV): Based on the 
+    that specifies the path to the storage file (JSON or CSV). Based on the 
     file extension, it selects the appropriate storage type and initializes
-    the MoveApp with that storage. Additionally, it generates a user-specific
+    the MovieApp with that storage. Additionally, it generates a user-specific
     HTML file to display their movie list.
 
     Usage:
@@ -34,7 +35,7 @@ def main():
     storage_file = args.storage_file
 
     # Check the file extension and select the appropriate storage type
-    file_extension = os.path.splitdrive(storage_file)[-1].lower()
+    file_extension = os.path.splitext(storage_file)[-1].lower()
 
     if file_extension == ".json":
         storage = StorageJson(storage_file)
@@ -54,7 +55,7 @@ def main():
     # Run the Tkinter GUI loop
     root.mainloop()
 
-    # Generate the website when neccessary
+    # Generate the website when necessary
     user_name = os.path.splitext(os.path.basename(storage_file))[0]
     html_filename = f"{user_name}_index.html"
     app.generate_website(html_filename)
