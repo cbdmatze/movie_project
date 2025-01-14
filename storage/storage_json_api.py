@@ -4,14 +4,32 @@ from storage.istorage import IStorage
 
 
 class StorageJson(IStorage):
-    """JSON storage implementation for movie data."""
+    """
+    A class to handle movie storage using JSON files.
+    
+    This class provides methods for storing, listing, adding, updating and deleting
+    movie data from a JSON file. The JSON file is used as the persistant storage medium.
+    """
 
     def __init__(self, file_path):
-        """Initialize with a specific JSON file path."""
+        """
+        Initialize with the path to the JSON file for storing movie data.
+        
+        Args:
+            file_path (str): The file path to the JSON file for storing movie data.
+        """
         self.file_path = file_path
 
     def _load_movies(self):
-        """Helper method to load movies from the JSON file."""
+        """
+        Helper method to load movie data from the JSON file.
+        
+        Returns:
+            dict: A dictionary of movies from the JSON file.
+            
+        Raises:
+            ValueError: If the file is corrupted or empty.
+        """
         try:
             with open(self.file_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
@@ -20,16 +38,37 @@ class StorageJson(IStorage):
             return {}  # Return empty dictionary if the file doesn't exist or is invalid
 
     def _save_movies(self, movies):
-        """Helper method to save movies to the JSON file."""
+        """
+        Helper method to save movies to the JSON file.
+        
+        Args:
+            movies (dict): A dictionary of movies to save in the JSON file.
+        """
         with open(self.file_path, 'w', encoding='utf-8') as f:
             json.dump(movies, f, indent=4)
 
     def list_movies(self):
-        """List all movies from the JSON file."""
+        """
+        Retrieve all movies from the JSON file.
+        
+        Returns:
+            dict: A dictionary of all movies stored in the JSON file.
+        """
         return self._load_movies()
 
     def add_movie(self, title, year, rating, poster_url="https://via.placeholder.com/300x450?text=No+Poster"):
-        """Add a new movie to the JSON file."""
+        """
+        Add a new movie to the JSON file.
+        
+        Args:
+            title (str): The title of the movie.
+            year (int): The release year of the movie.
+            rating (float): The IMDb rating of the movie.
+            poster_url (str): The URL of the movie's poster image.
+            
+        Raises:
+            ValueError: If the movie already exists in the storage.
+        """
         movies = self._load_movies()
         if title in movies:
             raise ValueError(f"Movie '{title}' already exists.")
@@ -43,7 +82,15 @@ class StorageJson(IStorage):
         self._save_movies(movies)
 
     def delete_movie(self, title):
-        """Delete a movie from the JSON file."""
+        """
+        Delete a movie from ghe JSON file.
+        
+        Args:
+            title (str): The title of the movie to delete.
+        
+        Raises:
+            ValueError: If the movie is not found in the storage.
+        """
         movies = self._load_movies()
         if title in movies:
             del movies[title]
@@ -52,7 +99,16 @@ class StorageJson(IStorage):
             raise ValueError(f"Movie '{title}' not found.")
 
     def update_movie(self, title, rating):
-        """Update the rating of an existing movie."""
+        """
+        Update the rating of an existing movie.
+        
+        Args:
+            title (str): The title of the movie to update.
+            rating (float): The new rating for the movie.
+            
+        Raises:
+            ValueError: If the movie is not found in the storage.
+        """
         movies = self._load_movies()
         if title in movies:
             movies[title]['rating'] = rating
@@ -61,5 +117,14 @@ class StorageJson(IStorage):
             raise ValueError(f"Movie: '{title}' not found.")
 
     def get_file_path(self):
-        """Return the file path where the JSON file is stored."""
+        """
+        Return the file path where the JSON file is stored.
+        
+        Returns:
+            str: The file path to the JSON file.
+        """
         return self.file_path
+
+
+
+

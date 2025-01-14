@@ -13,6 +13,10 @@ class MovieGUI:
         """
         Initialize the Movie GUI with the given master (Tkinter window)
         and movie storage.
+        
+        Args:
+            master (tk.Tk): The main Tkinter window instance.
+            storage (Istorage): The movie storage instance (could be CSV or JSON backend).
         """
         self.master = master
         self.storage = storage
@@ -38,34 +42,50 @@ class MovieGUI:
     def refresh_movie_list(self):
         """
         Refresh the listbox with the movie titles from the storage.
+        
+        This method retrieves the movie data from the storage and updates
+        the Listbox widget with the latest movie titles.
         """
-        self.movie_listbox.delete(0, tk.END)
-        movies = self.storage.list_movies()
+        self.movie_listbox.delete(0, tk.END) # Clear current list
+        movies = self.storage.list_movies() # Fetch movie data from the storage
         for movie in movies:
-            self.movie_listbox.insert(tk.END, movie)
+            self.movie_listbox.insert(tk.END, movie) # Insert movies into the listbox
 
     def show_context_menu(self, event):
         """
         Show the right-click menu for the movie listbox.
+        
+        Args:
+            event (tk.Event): The event triggered by the right-click.
+            
+        This method positions and displays the context menu at the location
+        of the right-click event within the listbox.
         """
         self.menu.post(event.x_root, event.y_root)
 
     def watch_movie(self):
         """
         Get the selected movie and open the streaming URL in the browser.
+        
+        The method retrieves the movie title selected in the listbox and constructs
+        a streaming URL based on the title, then opens it in the default web browser.
         """
         selected = self.movie_listbox.curselection()
         if selected:
-            movie_title = self.movie_listbox.get(selected)
+            movie_title = self.movie_listbox.get(selected) # Get movie title
+            # Construct the streaming URL for JustWatch
             streaming_url = f"https://justwatch.com/search?q={movie_title.replace(' ', '+')}"
-            webbrowser.open(streaming_url)
+            webbrowser.open(streaming_url) # Open the URL in the browser
 
     def delete_movie(self):
         """
         Delete the selected movie from the storage and refresh the list.
+        
+        The method removes the selected movie from the storage and updates
+        the Listbox to reflect the deletion by calling the 'refresh_movie_list()' method
         """
         selected = self.movie_listbox.curselection()
         if selected:
-            movie_title = self.movie_listbox.get(selected)
-            self.storage.delete_movie(movie_title)
-            self.refresh_movie_list()
+            movie_title = self.movie_listbox.get(selected) # Get the movie title
+            self.storage.delete_movie(movie_title) # Delete the movie from storage
+            self.refresh_movie_list() # Refresh the list to reflect changes

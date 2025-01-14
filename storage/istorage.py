@@ -2,20 +2,22 @@ from abc import ABC, abstractmethod
 
 
 class IStorage(ABC):
-    """Interface for movie storage operations."""
+    """Interface for movie storage operations.
+    
+    This interface defines methods for storing, updating, listing, and deleting
+    movie data in a persistent storage format (CSV, JSON, etc.).
+    
+    Each implementing class must provide concrete implementations for these operations.
+    """
 
     @abstractmethod
     def list_movies(self):
         """
-        Return a dictionary of all movies in the format:
-        {
-            "Movie Title": {
-                "year": <release_year>,
-                "rating": <rating>,
-                "poster_url": <poster_url>
-            },
-            ...
-        }
+        Retrieve all movies stored in the storage system.
+        
+        Returns:
+            dict: A dictionary where keys are movie titles and values are dictionaries
+            containing the movie's 'year', 'rating', and 'poster_url'.
         """
         pass
 
@@ -29,27 +31,36 @@ class IStorage(ABC):
             year (int): Release year of the movie.
             rating (float): IMDb rating of the movie.
             poster_url (str): URL of the movie poster image.
+        
+        Raises:
+            ValueError: If a movie with the same title already exists in storage.
         """
         pass
 
     @abstractmethod
     def delete_movie(self, title):
         """
-        Delete a movie by its title.
-
+        Delete a movie from the storage system by its title.
+        
         Args:
             title (str): The title of the movie to delete.
+            
+        Raises:
+            ValueError: If the movie with the specified title does not exist in the storage.
         """
         pass
 
     @abstractmethod
     def update_movie(self, title, rating):
         """
-        Update the rating of a movie.
-
+        Update the rating of an existing movie.
+        
         Args:
-            title (str): Movie title.
-            rating (float): New rating for the movie.
+            title (str): The title of the movie to update.
+            rating (float): The new rating for the movie.
+            
+        Raises:
+            ValueError: If the movie with the specified title does not exist in storage.
         """
         pass
 

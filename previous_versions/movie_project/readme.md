@@ -1,4 +1,4 @@
-
+---
 Movie Database CLI Application
 
 A Python-based command-line interface (CLI) application to manage a personal movie database. This application allows users to add, update, delete, list, and search for movies with fuzzy matching. It also displays statistics about the movie collection, such as the best-rated and worst-rated movies.
@@ -145,3 +145,5 @@ Contributions, issues, and feature requests are welcome! Feel free to open a pul
 Author
 
 	•	Matthias Will (www.github.com/cbdmatze)
+
+---

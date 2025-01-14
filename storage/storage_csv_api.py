@@ -3,24 +3,29 @@ from storage.istorage import IStorage
 
 
 class StorageCsv(IStorage):
-    """Class to handle movie storage using CSV files."""
+    """
+    A class to handle movie storage using CSV files.
+    
+    This class provides methods for storing, listing, adding, updating, and deleting 
+    movie data from a CSV file. The CSV file is used as the persistant storage medium.
+    """
 
     def __init__(self, file_path):
-        """Initialize the storage with the path to the CSV file."""
+        """
+        Initialize the storage with the path to the CSV file.
+        
+        Args:
+            file_path (str): The file path to the CSV file for storing the movie data.
+        """
         self.file_path = file_path
 
     def list_movies(self):
         """
-        Returns a dictionary of dictionaries containing the movies.
-        Example:
-        {
-            "Titanic": {
-                "rating": 9.2,
-                "year": 1995,
-                "poster_url": "https://example.com/image.jpg"
-            },
-            ...
-        }
+        Retrieve a dictionary of all movies stored in the CSV file.
+        
+        Returns:
+            dict: A dictionary where each key is a movie title, and the value is
+            a dictionary with the movie's 'rating', 'year', and 'poster_url'.
         """
         movies = {}
         try:
@@ -39,7 +44,18 @@ class StorageCsv(IStorage):
         return movies
 
     def add_movie(self, title, year, rating, poster_url="https://via.placeholder.com/300x450?text=No+Poster"):
-        """Add a new movie to the CSV file."""
+        """
+        Add a new movie to the CSV file.
+        
+        Args:
+            title (str): The title of the movie.
+            year (int): The release year of the movie.
+            rating (float): The IMDb rating of the movie.
+            poster_url (str): The URL of the movie's poster image.
+            
+        Raises:
+            ValueError: If the movie already exists in the storage.
+        """
         movies = self.list_movies()
         if title in movies:
             raise ValueError(f"Movie '{title}' already exists.")
@@ -58,7 +74,15 @@ class StorageCsv(IStorage):
             })
 
     def delete_movie(self, title):
-        """Delete a movie from the CSV file."""
+        """
+        Delete a movie from the CSV file.
+        
+        Args:
+            title (str): The title of the movie to delete.
+            
+        Raises:
+            ValueError: If the movie is not found in the storage.
+        """
         movies = self.list_movies()
         if title in movies:
             del movies[title]
@@ -68,7 +92,16 @@ class StorageCsv(IStorage):
             raise ValueError(f"Movie '{title}' not found in the database.")
 
     def update_movie(self, title, rating):
-        """Update the rating of an existing movie in the CSV file."""
+        """
+        Update the rating of an existing movie.
+        
+        Args:
+            title (str): The title of the movie to update.
+            rating (float): The new rating for the movie.
+        
+        Raises:
+            ValueError: If the movie is not found in the storage.
+        """
         movies = self.list_movies()
         if title in movies:
             movies[title]['rating'] = rating
@@ -78,7 +111,12 @@ class StorageCsv(IStorage):
             raise ValueError(f"Movie '{title}' not found in the database.")
 
     def _write_movies_to_csv(self, movies):
-        """Helper method to write the current state of movies to the CSV file."""
+        """
+        Helper method to write the current list of movies to the CSV file.
+        
+        Args:
+            movies (dict): A dictionary of movies to save in the CSV file.
+        """
         with open(self.file_path, mode='w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['title', 'rating', 'year', 'poster_url'])
             writer.writeheader()
@@ -91,5 +129,10 @@ class StorageCsv(IStorage):
                 })
 
     def get_file_path(self):
-        """Return the file path where the CSV file is stored."""
+        """
+        Return the file path where the CSV file is stored.
+        
+        Returns:
+            str: The file path to the CSV file.
+        """
         return self.file_path
