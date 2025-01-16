@@ -5,6 +5,8 @@ import urllib.parse
 import platform
 from movie_app_api import MovieApp
 import os
+import logging  # Import logging
+import matplotlib.pyplot as plt  # Import matplotlib for plotting
 
 
 class MovieAppTkGui:
@@ -22,6 +24,11 @@ class MovieAppTkGui:
         """
         self.root = root
         self.movie_app = movie_app
+
+        # Set up logging
+        logging.basicConfig(filename="movie_app.log", level=logging.INFO,
+                            format="%(asctime)s - %(levelname)s - %(message)s")
+        logging.info("MovieAppTkGui initialized.")
 
         # Set window title and dimensions
         self.root.title("Movie App")
@@ -54,10 +61,6 @@ class MovieAppTkGui:
         # Bind double-click event to open a movie in the browser
         self.movie_listbox.bind("<Double-1>", self.watch_movie)
 
-        # Load more button
-        self.load_more_button = tk.Button(self.root, text="Load More", command=self.load_more_movies)
-        self.load_more_button.pack()
-
     def create_context_menu(self):
         """
         Create the right-click context menu.
@@ -87,7 +90,7 @@ class MovieAppTkGui:
         try:
             self.context_menu.post(event.x_root, event.y_root)
         except Exception as e:
-            print(f"Error showing context menu: {e}")
+            logging.error(f"Error showing context menu: {e}")
 
     def populate_movie_list(self):
         """
@@ -98,155 +101,155 @@ class MovieAppTkGui:
         and whenever the movie list is updated.
         """
         self.movie_listbox.delete(0, tk.END)
-        movies = self.movie_app._storage.list_movies()
+        start = (self.current_page - 1) * self.items_per_page
+        movies = self.movie_app._storage.list_movies()[start:start + self.items_per_page]
+        
         for movie in movies:
             self.movie_listbox.insert(tk.END, movie)
+
+        # Call pagination button creator
+        self.create_pagination_buttons()
+
+        logging.info("Movie list populated with pagination.")
+
+    def create_pagination_buttons(self):
+        """
+        Create the pagination buttons (Previous and Next) below the movie list.
+        
+        This method adds two buttons, "Previous" and "Next", which allow users to
+        navigate through the movie list by pages.
+        """
+        for widget in self.pagination_frame.winfo_children():
+            widget.destroy()  # Remove any existing buttons
+
+        prev_button = tk.Button(self.pagination_frame, text="Previous", command=self.prev_page)
+        prev_button.pack(side=tk.LEFT, padx=10)
+
+        next_button = tk.Button(self.pagination_frame, text="Next", command=self.next_page)
+        next_button.pack(side=tk.LEFT, padx=10)
+
+    def prev_page(self):
+        """
+        Navigate to the previous page of movie results.
+        
+        This method decreases the current page number and updates the list of
+        movies shown on the GUI to the previous set of results.
+        """
+        if self.current_page > 1:
+            self.current_page -= 1
+            self.populate_movie_list()
+            logging.info(f"Moved to page {self.current_page}.")
+
+    def next_page(self):
+        """
+        Navigate to the next page of movie results.
+        
+        This method increases the current page number and updates the list of
+        movies shown on the GUI to the next set of results.
+        """
+        self.current_page += 1
+        self.populate_movie_list()
+        logging.info(f"Moved to page {self.current_page}.")
 
     def add_movie(self):
         """
         Add new movie to the database and update the list.
         
         This method prompts the user for a movie title via dialog box, attempts to 
-        add the movie to the database, and updates the listbox if successful. If the 
-        movie could not be added, an error message is shown.
+        add the movie to the database, and updates the listbox if successful. If the
+        movie is already present or an error occurs, it displays an error message.
         """
-        new_movie = simpledialog.askstring("Add Movie", "Enter movie name:")
-        if new_movie:
-            success = self.movie_app.add_movie(new_movie) 
-            if success:
-                self.populate_movie_list()
+        movie_title = simpledialog.askstring("Add Movie", "Enter movie title:")
+        if movie_title:
+            if self.movie_app.add_movie(movie_title):
+                messagebox.showinfo("Success", f"Movie '{movie_title}' added successfully!")
+                self.populate_movie_list()  # Update the list after adding the movie
+                logging.info(f"Movie '{movie_title}' added.")
             else:
-                messagebox.showerror("Error", "Movie could not be added.")
+                messagebox.showwarning("Failed", f"Movie '{movie_title}' already exists.")
+                logging.warning(f"Failed to add movie '{movie_title}': already exists.")
 
     def delete_movie(self):
         """
-        Delete a selected movie from the database and update the list.
+        Delete the selected movie from the database and update the list.
         
-        This method prompts the user to confirm the deletion of a selected movie. If confirmed, 
-        the movie is deleted from the database and the listbox is updated.
+        This method deletes the selected movie title from the database, displays a 
+        success message, and updates the listbox. If no movie is selected, it shows
+        a warning message.
         """
         selected_movie = self.movie_listbox.get(tk.ACTIVE)
         if selected_movie:
-            confirm = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete '{selected_movie}'?")
-            if confirm:
-                self.movie_app.delete_movie(selected_movie)
-                self.populate_movie_list()
-        else:
-            messagebox.showerror("Error", "No movie selected!")
+            if self.movie_app.delete_movie(selected_movie):
+                messagebox.showinfo("Deleted", f"Movie '{selected_movie}' deleted successfully!")
+                self.populate_movie_list()  # Update the list after deletion
+                logging.info(f"Movie '{selected_movie}' deleted.")
+            else:
+                messagebox.showwarning("Failed", f"Could not delete movie '{selected_movie}'.")
+                logging.error(f"Failed to delete movie '{selected_movie}'.")
 
     def show_stats(self):
         """
-        Display movie statistics in a message box.
+        Show the movie statistics in a plot.
         
-        This method fetches the movie statistics from the MovieApp instance and 
-        displays them in a message box. The statistics may include information such as
-        average ratings, best and worst movies, etc.
+        This method gathers movie statistics such as ratings or movie counts
+        and generates a bar chart to display these statistics using matplotlib.
         """
-        stats = self.movie_app.show_stats()
-        messagebox.showinfo("Movie Stats", stats)
+        # Fetch movie statistics from the MovieApp
+        movie_stats = self.movie_app.get_movie_statistics()
+
+        # Plot the statistics using matplotlib
+        plt.bar(movie_stats.keys(), movie_stats.values())
+        plt.xlabel("Movie Titles")
+        plt.ylabel("Statistics (Ratings or Count)")
+        plt.title("Movie Statistics")
+        plt.show()
+
+        logging.info("Movie statistics displayed in a plot.")
 
     def search_movie(self):
         """
-        Search for a movie and display the results.
+        Search for a movie from the list.
         
-        This method prompts the user for a movie title, searches for it in the database
-        and displays the search results. If no matching movies are found, an appropriate 
-        message is shown.
+        This method prompts the user for a search query and filters the movie list
+        based on the query, displaying matching movie titles in the listbox.
         """
-        search_term = simpledialog.askstring("Search Movie", "Enter movie name:")
-        if search_term:
-            results = self.movie_app.search_movie(search_term)
-            if results:
-                result_str = "\n".join(results)
-                messagebox.showinfo("Search Results", result_str)
-            else:
-                messagebox.showinfo("Search Results", "No movies found")
+        search_query = simpledialog.askstring("Search Movie", "Enter movie title to search:")
+        if search_query:
+            self.movie_listbox.delete(0, tk.END)
+            movies = self.movie_app.search_movie(search_query)
+            for movie in movies:
+                self.movie_listbox.insert(tk.END, movie)
+            logging.info(f"Searched for movie '{search_query}'.")
 
     def generate_website(self):
         """
-        Generate the movie website.
-
-        This method triggers the MovieApp instance to generate or update the website 
-        that displays the list of movies. Once the website is updated, a message box
-        is displayed to inform the user.
+        Generate a website for the movie database.
+        
+        This method generates a static website using the current movie list and saves
+        it in an HTML file, allowing users to view the movie catalog online.
         """
-        # Extract the user name from the storage file path (similar to main.py)
-        user_name = os.path.splitext(os.path.basename(self.movie_app._storage.file_path))[0]
-        
-        # Generate the HTML filename (e.g., "matthias_index.html")
-        html_filename = f"{user_name}_index.html"
-        
-        # Call the generate_website method and pass the filename
-        self.movie_app.generate_website(html_filename)
-        
-        # Inform the user
-        messagebox.showinfo("Website Generated", f"The movie website '{html_filename}' has been updated.")
+        self.movie_app.generate_website()
+        messagebox.showinfo("Website Generated", "The movie website has been successfully generated!")
+        logging.info("Movie website generated.")
 
     def watch_movie(self, event):
         """
-        Handle double-click on a movie to watch it.
+        Open the selected movie in a web browser for streaming.
         
-        This method is triggered when the user double-clicks a movie in the listbox.
-        It opens the default web browser to the streaming URL for the selected movie.
-        
-        Args:
-            event (tk.Event): The event generated by the double-click action.
+        This method opens the movie's streaming page (on JustWatch) in the user's default
+        web browser when the user double-clicks a movie title in the listbox.
         """
-        selected = self.movie_listbox.curselection()
-        if selected:
-            movie_title = self.movie_listbox.get(selected)
-            if movie_title:
-                # URL encoding the movie title
-                query = urllib.parse.quote(movie_title)
-                streaming_url = f"https://ww4.123moviesfree.net/search/?q={query}"
-                try:
-                    webbrowser.open(streaming_url)
-                except Exception as e:
-                    messagebox.showerror("Error", f"Failed to open browser: {e}")
+        selected_movie = self.movie_listbox.get(tk.ACTIVE)
+        if selected_movie:
+            streaming_url = f"https://justwatch.com/search?q={urllib.parse.quote_plus(selected_movie)}"
+            webbrowser.open(streaming_url)
+            logging.info(f"Movie '{selected_movie}' opened in the browser for streaming.")
 
-    def load_more_movies(self):
-        """Load more movies and display them."""
-        self.current_page += 1
-        self.populate_movie_list()
-
-    def create_pagination_buttons(self):
-        """Create pagination buttons."""
-        # Clear existing pagination buttons
-        for widget in self.pagination_frame.winfo_children():
-            widget.destroy()
-
-        total_movies = len(self.movie_app._storage.list_movies())
-        total_pages = (total_movies // self.items_per_page) + (1 if total_movies % self.items_per_page != 0 else 0)
-
-        if self.current_page > 1:
-            prev_button = tk.Button(self.pagination_frame, text="Previous", command=self.prev_page)
-            prev_button.grid(row=0, column=0, padx=10)
-
-        if self.current_page < total_pages:
-            next_button = tk.Button(self.pagination_frame, text="Next", command=self.next_page)
-            next_button.grid(row=0, column=1, padx=10)
-
-    def prev_page(self):
-        """Navigate to the previous page."""
-        if self.current_page > 1:
-            self.current_page -= 1
-            self.populate_movie_list()
-
-    def next_page(self):
-        """Navigate to the next page."""
-        self.current_page += 1
-        self.populate_movie_list()
-
-    @staticmethod
-    def run_gui(movie_app):
+    def run_gui(self):
         """
-        Run the Movie App GUI.
+        Run the main Tkinter loop.
         
-        This static method initializes and runs the Tkinter GUI for the MovieApp.
-        
-        Args:
-            movie_app (MovieApp): The MovieApp instance that provides the movie database.
+        This method starts the Tkinter event loop, which keeps the GUI running and responsive
+        to user interactions.
         """
-        root = tk.Tk()
-        app_gui = MovieAppTkGui(root, movie_app)
-        root.mainloop()
+        self.root.mainloop()

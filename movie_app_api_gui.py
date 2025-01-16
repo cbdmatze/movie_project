@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import Menu
 import webbrowser
 from movie_app_api import MovieApp
+import logging  # Import logging
 
 
 class MovieGUI:
@@ -20,6 +21,11 @@ class MovieGUI:
         """
         self.master = master
         self.storage = storage
+
+        # Set up logging
+        logging.basicConfig(filename="movie_app.log", level=logging.INFO,
+                            format="%(asctime)s - %(levelname)s - %(message)s")
+        logging.info("MovieGUI initialized.")
 
         # Create the movie list frame
         self.frame = tk.Frame(master)
@@ -46,10 +52,12 @@ class MovieGUI:
         This method retrieves the movie data from the storage and updates
         the Listbox widget with the latest movie titles.
         """
-        self.movie_listbox.delete(0, tk.END) # Clear current list
-        movies = self.storage.list_movies() # Fetch movie data from the storage
+        self.movie_listbox.delete(0, tk.END)  # Clear current list
+        movies = self.storage.list_movies()  # Fetch movie data from the storage
         for movie in movies:
-            self.movie_listbox.insert(tk.END, movie) # Insert movies into the listbox
+            self.movie_listbox.insert(tk.END, movie)  # Insert movies into the listbox
+
+        logging.info("Movie list refreshed.")
 
     def show_context_menu(self, event):
         """
@@ -72,20 +80,22 @@ class MovieGUI:
         """
         selected = self.movie_listbox.curselection()
         if selected:
-            movie_title = self.movie_listbox.get(selected) # Get movie title
+            movie_title = self.movie_listbox.get(selected)  # Get movie title
             # Construct the streaming URL for JustWatch
             streaming_url = f"https://justwatch.com/search?q={movie_title.replace(' ', '+')}"
-            webbrowser.open(streaming_url) # Open the URL in the browser
+            webbrowser.open(streaming_url)  # Open the URL in the browser
+            logging.info(f"Movie '{movie_title}' watched via streaming.")
 
     def delete_movie(self):
         """
         Delete the selected movie from the storage and refresh the list.
         
         The method removes the selected movie from the storage and updates
-        the Listbox to reflect the deletion by calling the 'refresh_movie_list()' method
+        the Listbox to reflect the deletion by calling the 'refresh_movie_list()' method.
         """
         selected = self.movie_listbox.curselection()
         if selected:
-            movie_title = self.movie_listbox.get(selected) # Get the movie title
-            self.storage.delete_movie(movie_title) # Delete the movie from storage
-            self.refresh_movie_list() # Refresh the list to reflect changes
+            movie_title = self.movie_listbox.get(selected)  # Get the movie title
+            self.storage.delete_movie(movie_title)  # Delete the movie from storage
+            self.refresh_movie_list()  # Refresh the list to reflect changes
+            logging.info(f"Movie '{movie_title}' deleted.")

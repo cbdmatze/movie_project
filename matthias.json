@@ -23,5 +23,15 @@
         "year": 1988,
         "rating": 8.2,
         "poster_url": "https://m.media-amazon.com/images/M/MV5BMGNlYmM1NmQtYWExMS00NmRjLTg5ZmEtMmYyYzJkMzljYWMxXkEyXkFqcGc@._V1_SX300.jpg"
+    },
+    "Scarface": {
+        "year": 1983,
+        "rating": 8.3,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BNDUzYjY0NmUtMDM4OS00Y2Q5LWJiODYtNTk0ZTk0YjZhMTg1XkEyXkFqcGc@._V1_SX300.jpg"
+    },
+    "Krabat": {
+        "year": 2008,
+        "rating": 6.1,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BMTUwOWQ5NDgtYjkxNi00NDFiLWI3NzctMGYwNzdkNjQ3NmQ4XkEyXkFqcGc@._V1_SX300.jpg"
     }
 }
