@@ -4,6 +4,7 @@ import webbrowser
 import urllib.parse
 import platform
 from movie_app_api import MovieApp
+import os
 
 
 class MovieAppTkGui:
@@ -26,9 +27,17 @@ class MovieAppTkGui:
         self.root.title("Movie App")
         self.root.geometry("600x400")
 
+        # Pagination variables
+        self.items_per_page = 5
+        self.current_page = 1
+
         # Create and pack the listbox to display movies
         self.movie_listbox = tk.Listbox(self.root, height=15, width=50)
         self.movie_listbox.pack(pady=20)
+
+        # Create the frame for pagination
+        self.pagination_frame = tk.Frame(self.root)
+        self.pagination_frame.pack(pady=10)
 
         # Create a context menu (right-click menu)
         self.create_context_menu()
@@ -44,6 +53,10 @@ class MovieAppTkGui:
 
         # Bind double-click event to open a movie in the browser
         self.movie_listbox.bind("<Double-1>", self.watch_movie)
+
+        # Load more button
+        self.load_more_button = tk.Button(self.root, text="Load More", command=self.load_more_movies)
+        self.load_more_button.pack()
 
     def create_context_menu(self):
         """
@@ -129,7 +142,7 @@ class MovieAppTkGui:
         displays them in a message box. The statistics may include information such as
         average ratings, best and worst movies, etc.
         """
-        stats = self.movie_app.get_movie_stats()
+        stats = self.movie_app.show_stats()
         messagebox.showinfo("Movie Stats", stats)
 
     def search_movie(self):
@@ -152,13 +165,22 @@ class MovieAppTkGui:
     def generate_website(self):
         """
         Generate the movie website.
-        
+
         This method triggers the MovieApp instance to generate or update the website 
         that displays the list of movies. Once the website is updated, a message box
         is displayed to inform the user.
         """
-        self.movie_app.generate_website()
-        messagebox.showinfo("Website Generated", "The movie website has been updated.")
+        # Extract the user name from the storage file path (similar to main.py)
+        user_name = os.path.splitext(os.path.basename(self.movie_app._storage.file_path))[0]
+        
+        # Generate the HTML filename (e.g., "matthias_index.html")
+        html_filename = f"{user_name}_index.html"
+        
+        # Call the generate_website method and pass the filename
+        self.movie_app.generate_website(html_filename)
+        
+        # Inform the user
+        messagebox.showinfo("Website Generated", f"The movie website '{html_filename}' has been updated.")
 
     def watch_movie(self, event):
         """
@@ -181,6 +203,39 @@ class MovieAppTkGui:
                     webbrowser.open(streaming_url)
                 except Exception as e:
                     messagebox.showerror("Error", f"Failed to open browser: {e}")
+
+    def load_more_movies(self):
+        """Load more movies and display them."""
+        self.current_page += 1
+        self.populate_movie_list()
+
+    def create_pagination_buttons(self):
+        """Create pagination buttons."""
+        # Clear existing pagination buttons
+        for widget in self.pagination_frame.winfo_children():
+            widget.destroy()
+
+        total_movies = len(self.movie_app._storage.list_movies())
+        total_pages = (total_movies // self.items_per_page) + (1 if total_movies % self.items_per_page != 0 else 0)
+
+        if self.current_page > 1:
+            prev_button = tk.Button(self.pagination_frame, text="Previous", command=self.prev_page)
+            prev_button.grid(row=0, column=0, padx=10)
+
+        if self.current_page < total_pages:
+            next_button = tk.Button(self.pagination_frame, text="Next", command=self.next_page)
+            next_button.grid(row=0, column=1, padx=10)
+
+    def prev_page(self):
+        """Navigate to the previous page."""
+        if self.current_page > 1:
+            self.current_page -= 1
+            self.populate_movie_list()
+
+    def next_page(self):
+        """Navigate to the next page."""
+        self.current_page += 1
+        self.populate_movie_list()
 
     @staticmethod
     def run_gui(movie_app):

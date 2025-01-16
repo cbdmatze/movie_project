@@ -8,20 +8,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class MovieApp:
+    """
+    The MovieApp class provides functionality for managing a movie database
+    and interacting with an external movie API to fetch details. It allows
+    adding, deleting, and fetching movies, along with generating an HTML website.
+    """
+    
     def __init__(self, storage: IStorage):
-        """Initialize the MovieApp with a storage instance."""
+        """
+        Initialize the MovieApp with a storage instance.
+
+        Args:
+            storage (IStorage): A storage instance that implements movie data storage.
+        """
         self._storage = storage
         self.api_key = os.getenv("OMDB_API_KEY")  # Fetch API key from environment
 
     def _fetch_movie_from_api(self, title):
         """
         Fetch movie details from the OMDb API.
-        
+
         Args:
-            title (str): The title of the movie to search for.
-            
+            title (str): The title of the movie to fetch.
+
         Returns:
-            dict: A dictionary containing movie details such as title, year, rating, and poster URL.
+            dict: Movie details such as title, year, rating, and poster URL.
+            None: If the movie was not found or an error occurred.
         """
         try:
             url = f"http://www.omdbapi.com/?t={title}&apikey={self.api_key}"
@@ -48,12 +60,12 @@ class MovieApp:
     def add_movie(self, movie_title):
         """
         Add a new movie to the database.
-        
+
         Args:
             movie_title (str): The title of the movie to add.
-            
-        Checks if the movie already exists in the storage and if not, fetches the movie
-        from the OMDb API, then stores the movie in the database.
+
+        Returns:
+            None
         """
         if not movie_title:
             print("Error: Movie name cannot be empty!")
@@ -68,7 +80,12 @@ class MovieApp:
         if not movie_data:
             return
 
-        self._storage.add_movie(movie_data["title"], movie_data["year"], movie_data["rating"], movie_data["poster_url"])
+        self._storage.add_movie(
+            movie_data["title"],
+            movie_data["year"],
+            movie_data["rating"],
+            movie_data["poster_url"],
+        )
         print(f"'{movie_data['title']}' added with rating {movie_data['rating']}, year {movie_data['year']}.")
 
         # Update website after movie is added
@@ -76,13 +93,13 @@ class MovieApp:
 
     def delete_movie(self, movie_title):
         """
-        Delete a movie from the database after confirming with the user.
-        
+        Delete a movie from the database.
+
         Args:
             movie_title (str): The title of the movie to delete.
-        
-        Uses fuzzy matching to search for movies with a similar title, then asks for user confirmation
-        before deleting the movie.
+
+        Returns:
+            None
         """
         if not movie_title:
             print("Error: Movie name cannot be empty")
@@ -113,8 +130,9 @@ class MovieApp:
     def _update_website_after_change(self):
         """
         Helper method to generate the website after adding or deleting a movie.
-        
-        This method regenerates the website using the current list of movies after an update.
+
+        Returns:
+            None
         """
         user_name = os.path.splitext(os.path.basename(self._storage.file_path))[0]
         html_filename = f"{user_name}_index.html"
@@ -123,13 +141,13 @@ class MovieApp:
 
     def generate_website(self, output_file):
         """
-        Generate an HTML website from the list of movies in the database.
-        
+        Generate an HTML website from the list of movies.
+
         Args:
-            output_file (str): The name of the file to save the generated HTML.
-            
-        The method reads a template file, generates the HTML structure with the movie details, 
-        and writes the result to the output file.
+            output_file (str): The output filename for the generated HTML file.
+
+        Returns:
+            None
         """
         movies = self._storage.list_movies()
         try:
@@ -167,10 +185,11 @@ class MovieApp:
 
     def run(self):
         """
-        Run the movie app manu, providing options to the user.
-        
-        The method continuously displays a menu to the user and handles their choice
-        to list movies, add or delete movies, view movie stats, search for movies, or generate the website.
+        Run the movie app menu, providing options for listing, adding, 
+        deleting movies, generating stats, and more.
+
+        Returns:
+            None
         """
         while True:
             print("\n********** My Movies Database **********\n")
@@ -199,7 +218,7 @@ class MovieApp:
                 movie_title = input("Enter movie title to delete: ").strip()
                 self.delete_movie(movie_title)
             elif choice == "4":
-                self._command_movie_stats()
+                print(self.show_stats())
             elif choice == "5":
                 self._command_search_movie()
             elif choice == "6":
@@ -213,7 +232,10 @@ class MovieApp:
 
     def _command_list_movies(self):
         """
-        List all movies in the database with their ratings and years.
+        List all movies in the database.
+
+        Returns:
+            None
         """
         movies = self._storage.list_movies()
         if movies:
@@ -223,10 +245,13 @@ class MovieApp:
         else:
             print("No movies found.")
 
-    def _command_movie_stats(self):
+    def show_stats(self):
         """
-        Display statistics about the movies in the database, such as the average rating,
-        best movie, and worst movie.
+        Display statistics about the movies, including the average rating,
+        best-rated, and worst-rated movie.
+
+        Returns:
+            str: A string containing the movie statistics.
         """
         movies = self._storage.list_movies()
         if movies:
@@ -236,18 +261,18 @@ class MovieApp:
             best_movie = max(movies, key=lambda x: movies[x]["rating"])
             worst_movie = min(movies, key=lambda x: movies[x]["rating"])
 
-            print(f"Average rating: {average}")
-            print(f"Best movie: {best_movie} (Rating: {movies[best_movie]['rating']})")
-            print(f"Worst movie: {worst_movie} (Rating: {movies[worst_movie]['rating']})")
-        else:
-            print("No movies in the database.")
-    
+            stats = (f"Average rating: {average}\n"
+                     f"Best movie: {best_movie} ({movies[best_movie]['rating']})\n"
+                     f"Worst movie: {worst_movie} ({movies[worst_movie]['rating']})")
+            return stats
+        return "No movies to calculate statistics."
+
     def _command_search_movie(self):
         """
-        Search for movies by part of their name using fuzzy matching .
-        
-        The search term is case-insensitive, and movies with a fuzzy match above 80%
-        will be displayed with their rating and year.
+        Search movies by part of their name (case-insensitive) with fuzzy matching.
+
+        Returns:
+            None
         """
         search_term = input("Enter part of the movie name to search: ").lower()
         found_movies = {
@@ -265,6 +290,9 @@ class MovieApp:
     def _command_movies_sorted_by_rating(self):
         """
         Display all movies sorted by rating in descending order.
+
+        Returns:
+            None
         """
         sorted_movies = sorted(
             self._storage.list_movies().items(), key=lambda x: x[1]["rating"], reverse=True

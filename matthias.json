@@ -18,5 +18,10 @@
         "year": 2015,
         "rating": 5.5,
         "poster_url": "https://m.media-amazon.com/images/M/MV5BM2IwZDRiOTAtNTUxOC00ZWQxLThlYTYtZTM2NTRmMjEzNmQwXkEyXkFqcGdeQXVyODAzNzAwOTU@._V1_SX300.jpg"
+    },
+    "Die Hard": {
+        "year": 1988,
+        "rating": 8.2,
+        "poster_url": "https://m.media-amazon.com/images/M/MV5BMGNlYmM1NmQtYWExMS00NmRjLTg5ZmEtMmYyYzJkMzljYWMxXkEyXkFqcGc@._V1_SX300.jpg"
     }
 }

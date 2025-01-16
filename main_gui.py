@@ -6,7 +6,6 @@ from storage.storage_json_api import StorageJson
 from storage.storage_csv_api import StorageCsv
 from movie_app_api import MovieApp  # Import the backend movie logic
 
-
 def main():
     """
     The main function to run the Movie App. It accepts a command-line argument
@@ -55,9 +54,9 @@ def main():
 
     # Generate the website after the Tkinter main loop ends (if necessary)
     user_name = os.path.splitext(os.path.basename(storage_file))[0]
+    user_name = user_name.replace(" ", "_")  # Replace spaces with underscores
     html_filename = f"{user_name}_index.html"
     movie_app.generate_website(html_filename)
-
 
 if __name__ == "__main__":
     main()

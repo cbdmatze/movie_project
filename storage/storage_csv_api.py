@@ -5,9 +5,9 @@ from storage.istorage import IStorage
 class StorageCsv(IStorage):
     """
     A class to handle movie storage using CSV files.
-    
+
     This class provides methods for storing, listing, adding, updating, and deleting 
-    movie data from a CSV file. The CSV file is used as the persistant storage medium.
+    movie data from a CSV file. The CSV file is used as the persistent storage medium.
     """
 
     def __init__(self, file_path):

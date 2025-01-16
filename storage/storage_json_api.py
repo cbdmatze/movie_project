@@ -1,14 +1,13 @@
-
 import json
 from storage.istorage import IStorage
-
+import os
 
 class StorageJson(IStorage):
     """
     A class to handle movie storage using JSON files.
     
-    This class provides methods for storing, listing, adding, updating and deleting
-    movie data from a JSON file. The JSON file is used as the persistant storage medium.
+    This class provides methods for storing, listing, adding, updating, and deleting
+    movie data from a JSON file. The JSON file is used as the persistent storage medium.
     """
 
     def __init__(self, file_path):
@@ -19,6 +18,20 @@ class StorageJson(IStorage):
             file_path (str): The file path to the JSON file for storing movie data.
         """
         self.file_path = file_path
+        self._validate_file_path()
+
+    def _validate_file_path(self):
+        """
+        Sanitize and validate the file path.
+        
+        Ensures that the file path is absolute and that the file exists.
+        
+        Raises:
+            FileNotFoundError: If the specified file path does not exist.
+        """
+        self.file_path = os.path.abspath(self.file_path)
+        if not os.path.exists(self.file_path):
+            raise FileNotFoundError(f"File {self.file_path} not found!")
 
     def _load_movies(self):
         """
@@ -83,7 +96,7 @@ class StorageJson(IStorage):
 
     def delete_movie(self, title):
         """
-        Delete a movie from ghe JSON file.
+        Delete a movie from the JSON file.
         
         Args:
             title (str): The title of the movie to delete.
@@ -124,7 +137,3 @@ class StorageJson(IStorage):
             str: The file path to the JSON file.
         """
         return self.file_path
-
-
-
-
