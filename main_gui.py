@@ -49,9 +49,36 @@ class MainApp:
         self.root.mainloop()
 
 
-if __name__ == "__main__":
+def main():
+    """Main function to handle CLI arguments and launch the GUI if needed."""
     parser = argparse.ArgumentParser(description="Movie App GUI")
+    parser.add_argument(
+        '--file', 
+        type=str, 
+        help="Path to the movie data file (JSON/CSV)"
+    )
     args = parser.parse_args()
 
-    app = MainApp()
-    app.run()
+    if args.file:
+        # If a file path is provided via the command line, start the movie app with that file
+        file_path = args.file
+        file_extension = os.path.splitext(file_path)[-1].lower()
+
+        if file_extension == ".json":
+            storage = StorageJson(file_path)
+        elif file_extension == ".csv":
+            storage = StorageCsv(file_path)
+        else:
+            print("Error: Unsupported file format! Only .json or .csv files are allowed.")
+            return
+
+        movie_app = MovieApp(storage)
+        MovieAppTkGui.run_gui(movie_app)
+    else:
+        # No file path provided, launch the GUI to let the user select a file
+        app = MainApp()
+        app.run()
+
+
+if __name__ == "__main__":
+    main()
